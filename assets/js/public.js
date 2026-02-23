@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider Biddut Block v1.0.0
+ * Product Carousel Slider Biddut Block v1.1.0
  */
 
 (function ($) {
@@ -223,12 +223,26 @@
         this.itemsPerView = this.columnsPhone;
       }
 
-      // Calculate gap
-      this.gap = windowWidth < 768 ? 20 : 30;
+      // Gap must match CSS .pcsbb-carousel-track gap at each breakpoint
+      if (windowWidth >= 1280) {
+        this.gap = 24; // default CSS gap: 24px
+      } else if (windowWidth >= 768) {
+        this.gap = 20; // tablet CSS gap: 20px
+      } else if (windowWidth >= 480) {
+        this.gap = 16; // mobile CSS gap: 16px
+      } else {
+        this.gap = 12; // phone CSS gap: 12px
+      }
 
-      // Calculate item width
+      // Each item has padding: 4px (gallery) or 0 (card), with box-sizing: border-box
+      // So the JS-set width IS the outer width in both cases — no extra offset needed
+      const itemPadding = 0;
+
+      // Calculate item width (integer pixels to avoid sub-pixel rendering gaps/clips)
       const totalGap = this.gap * (this.itemsPerView - 1);
-      this.itemWidth = (wrapperWidth - totalGap) / this.itemsPerView;
+      this.itemWidth = Math.round(
+        (wrapperWidth - totalGap) / this.itemsPerView,
+      );
 
       // Set item widths
       this.$items.css("width", this.itemWidth + "px");
@@ -368,7 +382,9 @@
 
     goToSlide(index) {
       this.currentIndex = Math.max(0, Math.min(index, this.maxIndex));
-      this.currentTranslate = -(this.itemWidth + this.gap) * this.currentIndex;
+      // Step = item width + gap; Math.round(itemWidth) prevents sub-pixel drift on repeated clicks
+      const stepWidth = this.itemWidth + this.gap;
+      this.currentTranslate = -stepWidth * this.currentIndex;
       this.prevTranslate = this.currentTranslate;
       this.setSliderPosition();
       this.updateNavigation();

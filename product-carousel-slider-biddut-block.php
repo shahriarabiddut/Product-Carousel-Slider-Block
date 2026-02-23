@@ -3,7 +3,7 @@
  * Plugin Name: Product Carousel Slider Biddut Block
  * Plugin URI: https://github.com/shahriarabiddut/Product-Carousel-Slider-Block
  * Description: Beautiful, responsive Product Carousel Slider Block with responsive columns, hover effects, gallery navigation, and add to cart functionality.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Shahriar Ahmed Biddut
  * Author URI: https://github.com/shahriarabiddut
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'PCSBB_VERSION', '1.0.0' );
+define( 'PCSBB_VERSION', '1.1.0' );
 define( 'PCSBB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PCSBB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PCSBB_PLUGIN_FILE', __FILE__ );

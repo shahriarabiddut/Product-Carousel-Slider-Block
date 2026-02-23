@@ -1,6 +1,6 @@
 <?php
 /**
- * PCSBB Gutenberg Block Class v1.0.0
+ * PCSBB Gutenberg Block Class v1.1.0
  *
  * @package ProductCarouselSliderBiddutBlock
  */
@@ -163,12 +163,36 @@ class PCSBB_Gutenberg_Block {
 				'outOfStockBgColor'        => '#555555',
 				'outOfStockTextColor'      => '#ffffff',
 				'showProductLink'          => false,
+				'productLinkBgColor'       => '#333333',
+				'productLinkTextColor'     => '#ffffff',
+				'productLinkHoverBgColor'  => '#000000',
+				'productLinkHoverTextColor' => '#ffffff',
+				'productLinkBorderColor'   => '#333333',
+				'productLinkIcon'          => 'dashicons-external',
+				'productLinkIconPosition'  => 'right',
 				'showAddToCart'            => false,
 				'addToCartText'            => __( 'Add to Cart', 'product-carousel-slider-biddut-block' ),
-				'addToCartStyle'           => 'default',
+				'addToCartBgColor'         => '#0073aa',
+				'addToCartTextColor'       => '#ffffff',
+				'addToCartHoverBgColor'    => '#005a87',
+				'addToCartHoverTextColor'  => '#ffffff',
+				'addToCartBorderColor'     => '#0073aa',
+				'addToCartIcon'            => 'dashicons-cart',
+				'addToCartIconPosition'    => 'left',
+				'buttonsLayout'            => 'stacked',
+				'buttonsOrder'             => 'cart-first',
+				'buttonsGap'               => 10,
 				'showViewAll'              => false,
 				'viewAllText'              => __( 'View All', 'product-carousel-slider-biddut-block' ),
 				'viewAllUrl'               => '',
+				'viewAllFontSize'          => 14,
+				'viewAllBgColor'           => '#333333',
+				'viewAllTextColor'         => '#ffffff',
+				'viewAllHoverBgColor'      => '#000000',
+				'viewAllHoverTextColor'    => '#ffffff',
+				'viewAllBorderColor'       => '#333333',
+				'addToCartFullWidth'       => false,
+				'productLinkFullWidth'     => false,
 			)
 		);
 
@@ -241,6 +265,22 @@ class PCSBB_Gutenberg_Block {
 			 	--pcsbb-nav-hover-color: <?php echo esc_attr( $attributes['navHoverColor'] ); ?>;
 			 	--pcsbb-nav-bg-color: <?php echo esc_attr( $attributes['navBgColor'] ); ?>;
 			 	--pcsbb-nav-bg-hover-color: <?php echo esc_attr( $attributes['navBgHoverColor'] ); ?>;
+			 	--pcsbb-product-link-bg: <?php echo esc_attr( $attributes['productLinkBgColor'] ); ?>;
+			 	--pcsbb-product-link-text: <?php echo esc_attr( $attributes['productLinkTextColor'] ); ?>;
+			 	--pcsbb-product-link-hover-bg: <?php echo esc_attr( $attributes['productLinkHoverBgColor'] ); ?>;
+			 	--pcsbb-product-link-hover-text: <?php echo esc_attr( $attributes['productLinkHoverTextColor'] ); ?>;
+			 	--pcsbb-product-link-border: <?php echo esc_attr( $attributes['productLinkBorderColor'] ); ?>;
+			 	--pcsbb-add-to-cart-bg: <?php echo esc_attr( $attributes['addToCartBgColor'] ); ?>;
+			 	--pcsbb-add-to-cart-text: <?php echo esc_attr( $attributes['addToCartTextColor'] ); ?>;
+			 	--pcsbb-add-to-cart-hover-bg: <?php echo esc_attr( $attributes['addToCartHoverBgColor'] ); ?>;
+			 	--pcsbb-add-to-cart-hover-text: <?php echo esc_attr( $attributes['addToCartHoverTextColor'] ); ?>;
+			 	--pcsbb-add-to-cart-border: <?php echo esc_attr( $attributes['addToCartBorderColor'] ); ?>;
+			 	--pcsbb-view-all-bg: <?php echo esc_attr( $attributes['viewAllBgColor'] ); ?>;
+			 	--pcsbb-view-all-text: <?php echo esc_attr( $attributes['viewAllTextColor'] ); ?>;
+			 	--pcsbb-view-all-hover-bg: <?php echo esc_attr( $attributes['viewAllHoverBgColor'] ); ?>;
+			 	--pcsbb-view-all-hover-text: <?php echo esc_attr( $attributes['viewAllHoverTextColor'] ); ?>;
+			 	--pcsbb-view-all-border: <?php echo esc_attr( $attributes['viewAllBorderColor'] ); ?>;
+			 	--pcsbb-view-all-font-size: <?php echo esc_attr( $attributes['viewAllFontSize'] ); ?>px;
 			 ">
 
 			<?php if ( ! empty( $attributes['showHeader'] ) && ( ! empty( $attributes['sectionTitle'] ) || ! empty( $attributes['sectionSubtitle'] ) ) ) : ?>
@@ -294,10 +334,14 @@ class PCSBB_Gutenberg_Block {
 				?>
 			</div>
 
-			<?php if ( ! empty( $attributes['showViewAll'] ) && ! empty( $attributes['viewAllUrl'] ) ) : ?>
+			<?php if ( ! empty( $attributes['showViewAll'] ) ) : ?>
 				<div class="pcsbb-view-all-wrapper">
-					<a href="<?php echo esc_url( $attributes['viewAllUrl'] ); ?>" class="pcsbb-view-all-button">
-						<?php echo esc_html( ! empty( $attributes['viewAllText'] ) ? $attributes['viewAllText'] : __( 'View All', 'product-carousel-slider-biddut-block' ) ); ?>
+					<?php
+					$view_all_href  = ! empty( $attributes['viewAllUrl'] ) ? esc_url( $attributes['viewAllUrl'] ) : '#';
+					$view_all_label = ! empty( $attributes['viewAllText'] ) ? $attributes['viewAllText'] : __( 'View All', 'product-carousel-slider-biddut-block' );
+					?>
+					<a href="<?php echo $view_all_href; ?>" class="pcsbb-view-all-button">
+						<?php echo esc_html( $view_all_label ); ?>
 					</a>
 				</div>
 			<?php endif; ?>
@@ -448,36 +492,118 @@ class PCSBB_Gutenberg_Block {
 					</div>
 				<?php endif; ?>
 
-				<?php if ( ! empty( $attributes['showAddToCart'] ) ) : ?>
-					<?php $this->render_add_to_cart( $product, $attributes ); ?>
-				<?php endif; ?>
-
-				<?php if ( ! empty( $attributes['showProductLink'] ) ) : ?>
-					<a href="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>" class="pcsbb-product-link">
-						<?php esc_html_e( 'View Product', 'product-carousel-slider-biddut-block' ); ?>
-					</a>
-				<?php endif; ?>
+				<?php $this->render_action_buttons( $product, $attributes ); ?>
 			</div><!-- .pcsbb-product-info -->
 		</div><!-- .pcsbb-product-item -->
 		<?php
 	}
 
 	/**
-	 * Render add to cart button.
+	 * Render action buttons (Add to Cart and/or View Product).
 	 *
 	 * @param WC_Product $product    WooCommerce product object.
 	 * @param array      $attributes Block attributes.
 	 */
-	private function render_add_to_cart( $product, $attributes ) {
+	private function render_action_buttons( $product, $attributes ) {
+		$show_cart = ! empty( $attributes['showAddToCart'] );
+		$show_link = ! empty( $attributes['showProductLink'] );
+
+		if ( ! $show_cart && ! $show_link ) {
+			return;
+		}
+
+		// Determine layout class
+		$buttons_class = 'pcsbb-action-buttons';
+		if ( $show_cart && $show_link ) {
+			$layout        = ! empty( $attributes['buttonsLayout'] ) ? $attributes['buttonsLayout'] : 'stacked';
+			$buttons_class .= ' pcsbb-buttons-' . sanitize_html_class( $layout );
+		}
+
+		$order      = ! empty( $attributes['buttonsOrder'] ) ? $attributes['buttonsOrder'] : 'cart-first';
+		$cart_first = ( 'cart-first' === $order );
+		$gap        = isset( $attributes['buttonsGap'] ) ? intval( $attributes['buttonsGap'] ) : 10;
+		?>
+		<div class="<?php echo esc_attr( $buttons_class ); ?>" style="gap: <?php echo esc_attr( $gap ); ?>px;">
+			<?php
+			if ( $cart_first ) {
+				if ( $show_cart ) {
+					$this->render_add_to_cart( $product, $attributes, $show_link );
+				}
+				if ( $show_link ) {
+					$this->render_product_link( $product, $attributes, $show_cart );
+				}
+			} else {
+				if ( $show_link ) {
+					$this->render_product_link( $product, $attributes, $show_cart );
+				}
+				if ( $show_cart ) {
+					$this->render_add_to_cart( $product, $attributes, $show_link );
+				}
+			}
+			?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render product link button.
+	 *
+	 * @param WC_Product $product      WooCommerce product object.
+	 * @param array      $attributes   Block attributes.
+	 * @param bool       $other_active Whether the other button (Add to Cart) is also shown.
+	 */
+	private function render_product_link( $product, $attributes, $other_active = false ) {
+		$icon          = ! empty( $attributes['productLinkIcon'] ) ? $attributes['productLinkIcon'] : 'dashicons-external';
+		$icon_position = ! empty( $attributes['productLinkIconPosition'] ) ? $attributes['productLinkIconPosition'] : 'right';
+
+		// Determine full-width class
+		$fw_class = '';
+		if ( $other_active ) {
+			// When paired, layout class handles width (stacked = both full, inline = flex)
+			$fw_class = '';
+		} else {
+			// Single button: use individual full-width attribute
+			$fw_class = ! empty( $attributes['productLinkFullWidth'] ) ? ' pcsbb-btn-full-width' : ' pcsbb-btn-auto';
+		}
+		?>
+		<a href="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>" class="pcsbb-product-link pcsbb-btn<?php echo esc_attr( $fw_class ); ?>">
+			<?php if ( 'left' === $icon_position ) : ?>
+				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
+			<?php endif; ?>
+			<span><?php esc_html_e( 'View Product', 'product-carousel-slider-biddut-block' ); ?></span>
+			<?php if ( 'right' === $icon_position ) : ?>
+				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
+			<?php endif; ?>
+		</a>
+		<?php
+	}
+
+	/**
+	 * Render add to cart button.
+	 *
+	 * @param WC_Product $product      WooCommerce product object.
+	 * @param array      $attributes   Block attributes.
+	 * @param bool       $other_active Whether the other button (View Product) is also shown.
+	 */
+	private function render_add_to_cart( $product, $attributes, $other_active = false ) {
 		if ( ! $product->is_purchasable() || ! $product->is_in_stock() ) {
 			return;
 		}
 
-		$button_text  = ! empty( $attributes['addToCartText'] ) ? $attributes['addToCartText'] : __( 'Add to Cart', 'product-carousel-slider-biddut-block' );
-		$button_style = ! empty( $attributes['addToCartStyle'] ) ? $attributes['addToCartStyle'] : 'default';
+		$button_text   = ! empty( $attributes['addToCartText'] ) ? $attributes['addToCartText'] : __( 'Add to Cart', 'product-carousel-slider-biddut-block' );
+		$icon          = ! empty( $attributes['addToCartIcon'] ) ? $attributes['addToCartIcon'] : 'dashicons-cart';
+		$icon_position = ! empty( $attributes['addToCartIconPosition'] ) ? $attributes['addToCartIconPosition'] : 'left';
 
-		$classes   = array( 'pcsbb-add-to-cart', 'button', 'add_to_cart_button', 'ajax_add_to_cart' );
-		$classes[] = 'pcsbb-cart-style-' . sanitize_html_class( $button_style );
+		// Determine full-width class
+		$fw_class = '';
+		if ( ! $other_active ) {
+			$fw_class = ! empty( $attributes['addToCartFullWidth'] ) ? ' pcsbb-btn-full-width' : ' pcsbb-btn-auto';
+		}
+
+		$classes = array( 'pcsbb-add-to-cart', 'pcsbb-btn', 'button', 'add_to_cart_button', 'ajax_add_to_cart' );
+		if ( $fw_class ) {
+			$classes[] = trim( $fw_class );
+		}
 		?>
 		<a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>"
 		   data-quantity="1"
@@ -485,7 +611,13 @@ class PCSBB_Gutenberg_Block {
 		   data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>"
 		   class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 		   rel="nofollow">
-			<?php echo esc_html( $button_text ); ?>
+			<?php if ( 'left' === $icon_position ) : ?>
+				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
+			<?php endif; ?>
+			<span><?php echo esc_html( $button_text ); ?></span>
+			<?php if ( 'right' === $icon_position ) : ?>
+				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
+			<?php endif; ?>
 		</a>
 		<?php
 	}

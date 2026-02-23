@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider Biddut Block - Gutenberg Block v1.0.0
+ * Product Carousel Slider Biddut Block - Gutenberg Block v1.1.0
  */
 
 (function () {
@@ -18,7 +18,6 @@
   const { createElement: el, Fragment } = wp.element;
   const { useSelect } = wp.data;
 
-  // Register the block
   registerBlockType("pcsbb/carousel", {
     title: "Product Carousel Slider",
     description:
@@ -35,312 +34,281 @@
       "shop",
       "gallery",
     ],
-    supports: {
-      align: ["wide", "full"],
-      html: false,
-    },
+    supports: { align: ["wide", "full"], html: false },
     attributes: {
-      // Header (Title & Subtitle)
-      showHeader: {
-        type: "boolean",
-        default: false,
-      },
-      sectionTitle: {
-        type: "string",
-        default: "",
-      },
-      sectionSubtitle: {
-        type: "string",
-        default: "",
-      },
+      // Header
+      showHeader: { type: "boolean", default: false },
+      sectionTitle: { type: "string", default: "" },
+      sectionSubtitle: { type: "string", default: "" },
+      sectionTitleFontSize: { type: "number", default: 32 },
+      sectionSubtitleFontSize: { type: "number", default: 24 },
+      sectionTitleColor: { type: "string", default: "#333333" },
+      sectionSubtitleColor: { type: "string", default: "#666666" },
 
-      // Typography
-      sectionTitleFontSize: {
-        type: "number",
-        default: 32,
-      },
-      sectionSubtitleFontSize: {
-        type: "number",
-        default: 24,
-      },
-      productTitleFontSize: {
-        type: "number",
-        default: 16,
-      },
-      productPriceFontSize: {
-        type: "number",
-        default: 18,
-      },
+      // Product Typography
+      productTitleFontSize: { type: "number", default: 16 },
+      productPriceFontSize: { type: "number", default: 18 },
+      productTitleColor: { type: "string", default: "#333333" },
+      productTitleHoverColor: { type: "string", default: "#000000" },
+      priceColor: { type: "string", default: "#333333" },
+      priceHoverColor: { type: "string", default: "#e74c3c" },
 
-      // Colors
-      sectionTitleColor: {
-        type: "string",
-        default: "#333",
-      },
-      sectionSubtitleColor: {
-        type: "string",
-        default: "#666",
-      },
-      productTitleColor: {
-        type: "string",
-        default: "#333",
-      },
-      productTitleHoverColor: {
-        type: "string",
-        default: "#000",
-      },
-      priceColor: {
-        type: "string",
-        default: "#333",
-      },
-      priceHoverColor: {
-        type: "string",
-        default: "#e74c3c",
-      },
-      navColor: {
-        type: "string",
-        default: "#333",
-      },
-      navHoverColor: {
-        type: "string",
-        default: "#ffffff",
-      },
-      navBgColor: {
-        type: "string",
-        default: "#ffffff",
-      },
-      navBgHoverColor: {
-        type: "string",
-        default: "#333",
-      },
+      // Nav Colors
+      navColor: { type: "string", default: "#333333" },
+      navHoverColor: { type: "string", default: "#ffffff" },
+      navBgColor: { type: "string", default: "#ffffff" },
+      navBgHoverColor: { type: "string", default: "#333333" },
 
-      // Design Variant (Only 2)
-      variant: {
-        type: "string",
-        default: "gallery",
-      },
+      // Design Variant
+      variant: { type: "string", default: "gallery" },
 
       // Responsive Columns
-      columnsDesktop: {
-        type: "number",
-        default: 4,
-      },
-      columnsTablet: {
-        type: "number",
-        default: 3,
-      },
-      columnsMobile: {
-        type: "number",
-        default: 2,
-      },
-      columnsPhone: {
-        type: "number",
-        default: 1,
-      },
+      columnsDesktop: { type: "number", default: 4 },
+      columnsTablet: { type: "number", default: 3 },
+      columnsMobile: { type: "number", default: 2 },
+      columnsPhone: { type: "number", default: 1 },
 
       // Image Display
-      imageHeightMode: {
-        type: "string",
-        default: "natural",
-      },
+      imageHeightMode: { type: "string", default: "natural" },
 
       // Carousel Settings
-      autoplay: {
-        type: "boolean",
-        default: false,
-      },
-      autoplayDelay: {
-        type: "number",
-        default: 5000,
-      },
-      loop: {
-        type: "boolean",
-        default: true,
-      },
-      transitionSpeed: {
-        type: "number",
-        default: 500,
-      },
+      autoplay: { type: "boolean", default: false },
+      autoplayDelay: { type: "number", default: 5000 },
+      loop: { type: "boolean", default: true },
+      transitionSpeed: { type: "number", default: 500 },
+      disableMobileSlider: { type: "boolean", default: false },
 
-      // Mobile Slider Control
-      disableMobileSlider: {
-        type: "boolean",
-        default: false,
-      },
+      // Navigation
+      showNavigation: { type: "boolean", default: true },
+      navigationStyle: { type: "string", default: "arrows" },
+      prevArrowIcon: { type: "string", default: "dashicons-arrow-left-alt2" },
+      nextArrowIcon: { type: "string", default: "dashicons-arrow-right-alt2" },
 
-      // Navigation Settings
-      showNavigation: {
-        type: "boolean",
-        default: true,
-      },
-      navigationStyle: {
-        type: "string",
-        default: "arrows",
-      },
-      prevArrowIcon: {
-        type: "string",
-        default: "dashicons-arrow-left-alt2",
-      },
-      nextArrowIcon: {
-        type: "string",
-        default: "dashicons-arrow-right-alt2",
-      },
-
-      // Hover Effects
-      hoverEffect: {
-        type: "string",
-        default: "zoom",
-      },
-      showImageDots: {
-        type: "boolean",
-        default: false,
-      },
-      showGalleryOnHover: {
-        type: "boolean",
-        default: true,
-      },
+      // Hover / Gallery
+      hoverEffect: { type: "string", default: "zoom" },
+      showImageDots: { type: "boolean", default: false },
+      showGalleryOnHover: { type: "boolean", default: true },
 
       // Product Query
-      categories: {
-        type: "array",
-        default: [],
-      },
-      limit: {
-        type: "number",
-        default: 12,
-      },
-      orderby: {
-        type: "string",
-        default: "date",
-      },
-      order: {
-        type: "string",
-        default: "DESC",
-      },
+      categories: { type: "array", default: [] },
+      limit: { type: "number", default: 12 },
+      orderby: { type: "string", default: "date" },
+      order: { type: "string", default: "DESC" },
 
       // Display Options
-      showTitle: {
-        type: "boolean",
-        default: true,
-      },
-      showPrice: {
-        type: "boolean",
-        default: true,
-      },
-      showRating: {
-        type: "boolean",
-        default: false,
-      },
-      showSaleLabel: {
-        type: "boolean",
-        default: true,
-      },
-      saleLabelText: {
-        type: "string",
-        default: "SALE",
-      },
-      saleLabelPosition: {
-        type: "string",
-        default: "top-right",
-      },
-      saleBadgeBgColor: {
-        type: "string",
-        default: "#e74c3c",
-      },
-      saleBadgeTextColor: {
-        type: "string",
-        default: "#ffffff",
-      },
-      showOutOfStockLabel: {
-        type: "boolean",
-        default: false,
-      },
-      outOfStockLabelText: {
-        type: "string",
-        default: "Sold Out",
-      },
-      outOfStockLabelPosition: {
-        type: "string",
-        default: "top-right",
-      },
-      outOfStockBgColor: {
-        type: "string",
-        default: "#555555",
-      },
-      outOfStockTextColor: {
-        type: "string",
-        default: "#ffffff",
-      },
-      showProductLink: {
-        type: "boolean",
-        default: false,
-      },
+      showTitle: { type: "boolean", default: true },
+      showPrice: { type: "boolean", default: true },
+      showRating: { type: "boolean", default: false },
 
-      // Add to Cart Options
-      showAddToCart: {
-        type: "boolean",
-        default: false,
-      },
-      addToCartText: {
-        type: "string",
-        default: "Add to Cart",
-      },
-      addToCartStyle: {
-        type: "string",
-        default: "default",
-      },
+      // Sale Label
+      showSaleLabel: { type: "boolean", default: true },
+      saleLabelText: { type: "string", default: "SALE" },
+      saleLabelPosition: { type: "string", default: "top-right" },
+      saleBadgeBgColor: { type: "string", default: "#e74c3c" },
+      saleBadgeTextColor: { type: "string", default: "#ffffff" },
+
+      // Out of Stock Label
+      showOutOfStockLabel: { type: "boolean", default: false },
+      outOfStockLabelText: { type: "string", default: "Sold Out" },
+      outOfStockLabelPosition: { type: "string", default: "top-right" },
+      outOfStockBgColor: { type: "string", default: "#555555" },
+      outOfStockTextColor: { type: "string", default: "#ffffff" },
+
+      // View Product Button
+      showProductLink: { type: "boolean", default: false },
+      productLinkBgColor: { type: "string", default: "#333333" },
+      productLinkTextColor: { type: "string", default: "#ffffff" },
+      productLinkHoverBgColor: { type: "string", default: "#000000" },
+      productLinkHoverTextColor: { type: "string", default: "#ffffff" },
+      productLinkBorderColor: { type: "string", default: "#333333" },
+      productLinkIcon: { type: "string", default: "dashicons-external" },
+      productLinkIconPosition: { type: "string", default: "right" },
+      productLinkFullWidth: { type: "boolean", default: false },
+
+      // Add to Cart Button
+      showAddToCart: { type: "boolean", default: false },
+      addToCartText: { type: "string", default: "Add to Cart" },
+      addToCartBgColor: { type: "string", default: "#0073aa" },
+      addToCartTextColor: { type: "string", default: "#ffffff" },
+      addToCartHoverBgColor: { type: "string", default: "#005a87" },
+      addToCartHoverTextColor: { type: "string", default: "#ffffff" },
+      addToCartBorderColor: { type: "string", default: "#0073aa" },
+      addToCartIcon: { type: "string", default: "dashicons-cart" },
+      addToCartIconPosition: { type: "string", default: "left" },
+      addToCartFullWidth: { type: "boolean", default: false },
+
+      // Button Layout (both buttons)
+      buttonsLayout: { type: "string", default: "stacked" },
+      buttonsOrder: { type: "string", default: "cart-first" },
+      buttonsGap: { type: "number", default: 10 },
 
       // View All Button
-      showViewAll: {
-        type: "boolean",
-        default: false,
-      },
-      viewAllText: {
-        type: "string",
-        default: "View All",
-      },
-      viewAllUrl: {
-        type: "string",
-        default: "",
-      },
+      viewAllFontSize: { type: "number", default: 14 },
+      showViewAll: { type: "boolean", default: false },
+      viewAllText: { type: "string", default: "View All" },
+      viewAllUrl: { type: "string", default: "" },
+      viewAllBgColor: { type: "string", default: "#333333" },
+      viewAllTextColor: { type: "string", default: "#ffffff" },
+      viewAllHoverBgColor: { type: "string", default: "#000000" },
+      viewAllHoverTextColor: { type: "string", default: "#ffffff" },
+      viewAllBorderColor: { type: "string", default: "#333333" },
     },
 
     edit: function (props) {
       const { attributes, setAttributes } = props;
       const blockProps = useBlockProps ? useBlockProps() : {};
 
-      // Fetch WooCommerce product categories
       const categories = useSelect((select) => {
         const store = select("core");
         if (!store) return [];
-
         const cats = store.getEntityRecords("taxonomy", "product_cat", {
           per_page: -1,
           hide_empty: false,
         });
-
         return cats || [];
       }, []);
 
-      // Prepare category options
       const categoryOptions = [
         { label: "All Categories", value: "" },
-        ...(categories.map((cat) => ({
-          label: cat.name,
-          value: cat.slug,
-        })) || []),
+        ...(categories.map((cat) => ({ label: cat.name, value: cat.slug })) ||
+          []),
       ];
+
+      // ── HELPERS ──────────────────────────────────────────────────
+
+      const labelStyle = {
+        display: "block",
+        fontSize: "11px",
+        fontWeight: "500",
+        marginBottom: "4px",
+        textTransform: "uppercase",
+        color: "#757575",
+      };
+
+      // Color cell: label + reset on top row, full-width color input below
+      const createColorCell = (label, attributeKey, defaultColor) =>
+        el(
+          "div",
+          null,
+          el(
+            "div",
+            {
+              style: {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "4px",
+              },
+            },
+            el("label", { style: { ...labelStyle, marginBottom: "0" } }, label),
+            el(
+              "button",
+              {
+                type: "button",
+                onClick: () => setAttributes({ [attributeKey]: defaultColor }),
+                title: "Reset to default",
+                style: {
+                  fontSize: "10px",
+                  color: "#aaa",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "0",
+                  lineHeight: "1",
+                  fontFamily: "inherit",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "2px",
+                },
+              },
+              "↺",
+            ),
+          ),
+          el("input", {
+            type: "color",
+            value: attributes[attributeKey] || defaultColor,
+            onChange: (e) => setAttributes({ [attributeKey]: e.target.value }),
+            style: {
+              width: "100%",
+              height: "30px",
+              padding: "2px",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              cursor: "pointer",
+            },
+          }),
+        );
+
+      // 2-col color grid
+      const createColorRow = (pairs) =>
+        el(
+          "div",
+          {
+            style: {
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "8px",
+              marginBottom: "10px",
+            },
+          },
+          ...pairs.map(([label, key, def]) => createColorCell(label, key, def)),
+        );
+
+      // Number input cell (for use inside grids)
+      const createNumberCell = (label, attributeKey, defaultVal, min, max) =>
+        el(
+          "div",
+          null,
+          el("label", { style: labelStyle }, label),
+          el("input", {
+            type: "number",
+            value:
+              attributes[attributeKey] !== undefined
+                ? attributes[attributeKey]
+                : defaultVal,
+            min,
+            max,
+            onChange: (e) => {
+              const val = parseInt(e.target.value, 10);
+              if (!isNaN(val)) setAttributes({ [attributeKey]: val });
+            },
+            style: {
+              width: "100%",
+              padding: "5px 8px",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              fontSize: "13px",
+              boxSizing: "border-box",
+            },
+          }),
+        );
+
+      // Section divider line
+      const divider = el("div", {
+        style: { borderTop: "1px solid #e0e0e0", margin: "14px 0 12px" },
+      });
+
+      // Subsection heading
+      const subheading = (text) =>
+        el(
+          "strong",
+          {
+            style: { fontSize: "13px", display: "block", marginBottom: "10px" },
+          },
+          text,
+        );
+
+      // ── PANELS ───────────────────────────────────────────────────
 
       return el(
         Fragment,
         null,
 
-        // Inspector Controls
         el(
           InspectorControls,
           null,
 
-          // Header Settings
+          // ── 1. HEADER ───────────────────────────────────────────
           el(
             PanelBody,
             { title: "Header (Title & Subtitle)", initialOpen: false },
@@ -360,14 +328,29 @@
                   onChange: (value) => setAttributes({ sectionTitle: value }),
                   placeholder: "e.g., NEW ARRIVALS",
                 }),
-                el(RangeControl, {
-                  label: "Title Font Size (px)",
-                  value: attributes.sectionTitleFontSize,
-                  onChange: (value) =>
-                    setAttributes({ sectionTitleFontSize: value }),
-                  min: 16,
-                  max: 60,
-                }),
+                el(
+                  "div",
+                  {
+                    style: {
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "8px",
+                      marginBottom: "16px",
+                    },
+                  },
+                  createNumberCell(
+                    "Font Size (px)",
+                    "sectionTitleFontSize",
+                    32,
+                    12,
+                    80,
+                  ),
+                  createColorCell(
+                    "Title Color",
+                    "sectionTitleColor",
+                    "#333333",
+                  ),
+                ),
                 el(TextControl, {
                   label: "Section Subtitle",
                   value: attributes.sectionSubtitle,
@@ -375,183 +358,32 @@
                     setAttributes({ sectionSubtitle: value }),
                   placeholder: "e.g., Fresh styles for the season",
                 }),
-                el(RangeControl, {
-                  label: "Subtitle Font Size (px)",
-                  value: attributes.sectionSubtitleFontSize,
-                  onChange: (value) =>
-                    setAttributes({ sectionSubtitleFontSize: value }),
-                  min: 12,
-                  max: 40,
-                }),
-              ),
-          ),
-
-          // Typography Settings
-          el(
-            PanelBody,
-            { title: "Typography", initialOpen: false },
-            el(RangeControl, {
-              label: "Product Title Font Size (px)",
-              value: attributes.productTitleFontSize,
-              onChange: (value) =>
-                setAttributes({ productTitleFontSize: value }),
-              min: 10,
-              max: 32,
-            }),
-            el(RangeControl, {
-              label: "Product Price Font Size (px)",
-              value: attributes.productPriceFontSize,
-              onChange: (value) =>
-                setAttributes({ productPriceFontSize: value }),
-              min: 12,
-              max: 36,
-            }),
-          ),
-
-          // Color Settings
-          // --- Section Colors (collapsible PanelBody) ---
-          el(
-            PanelBody,
-            { title: "Section Colors", initialOpen: false },
-            el(
-              "div",
-              {
-                style: { display: "flex", flexDirection: "column", gap: "8px" },
-              },
-              ...[
-                { label: "Section Title Color", key: "sectionTitleColor" },
-                {
-                  label: "Section Subtitle Color",
-                  key: "sectionSubtitleColor",
-                },
-              ].map(({ label, key }) =>
                 el(
                   "div",
                   {
-                    key,
                     style: {
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      padding: "4px 0",
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "8px",
                     },
                   },
-                  el("input", {
-                    type: "color",
-                    value: attributes[key] || "#333333",
-                    onChange: (e) => setAttributes({ [key]: e.target.value }),
-                    style: {
-                      width: "36px",
-                      height: "36px",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      padding: "2px",
-                      flexShrink: 0,
-                    },
-                  }),
-                  el("span", { style: { fontSize: "13px" } }, label),
+                  createNumberCell(
+                    "Font Size (px)",
+                    "sectionSubtitleFontSize",
+                    24,
+                    10,
+                    60,
+                  ),
+                  createColorCell(
+                    "Subtitle Color",
+                    "sectionSubtitleColor",
+                    "#666666",
+                  ),
                 ),
               ),
-            ),
           ),
 
-          // --- Product Colors (collapsible PanelBody) ---
-          el(
-            PanelBody,
-            { title: "Product Colors", initialOpen: false },
-            el(
-              "div",
-              {
-                style: { display: "flex", flexDirection: "column", gap: "8px" },
-              },
-              ...[
-                { label: "Product Title Color", key: "productTitleColor" },
-                {
-                  label: "Product Title Hover Color",
-                  key: "productTitleHoverColor",
-                },
-                { label: "Price Color", key: "priceColor" },
-                { label: "Price Hover Color", key: "priceHoverColor" },
-              ].map(({ label, key }) =>
-                el(
-                  "div",
-                  {
-                    key,
-                    style: {
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      padding: "4px 0",
-                    },
-                  },
-                  el("input", {
-                    type: "color",
-                    value: attributes[key] || "#333333",
-                    onChange: (e) => setAttributes({ [key]: e.target.value }),
-                    style: {
-                      width: "36px",
-                      height: "36px",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      padding: "2px",
-                      flexShrink: 0,
-                    },
-                  }),
-                  el("span", { style: { fontSize: "13px" } }, label),
-                ),
-              ),
-            ),
-          ),
-
-          // --- Navigation Colors (collapsible PanelBody) ---
-          el(
-            PanelBody,
-            { title: "Navigation Colors", initialOpen: false },
-            el(
-              "div",
-              {
-                style: { display: "flex", flexDirection: "column", gap: "8px" },
-              },
-              ...[
-                { label: "Arrow Icon Color", key: "navColor" },
-                { label: "Arrow Icon Hover Color", key: "navHoverColor" },
-                { label: "Arrow Background Color", key: "navBgColor" },
-                { label: "Arrow Background Hover", key: "navBgHoverColor" },
-              ].map(({ label, key }) =>
-                el(
-                  "div",
-                  {
-                    key,
-                    style: {
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      padding: "4px 0",
-                    },
-                  },
-                  el("input", {
-                    type: "color",
-                    value: attributes[key] || "#333333",
-                    onChange: (e) => setAttributes({ [key]: e.target.value }),
-                    style: {
-                      width: "36px",
-                      height: "36px",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      padding: "2px",
-                      flexShrink: 0,
-                    },
-                  }),
-                  el("span", { style: { fontSize: "13px" } }, label),
-                ),
-              ),
-            ),
-          ),
-
-          // Design Variant
+          // ── 2. DESIGN VARIANT ────────────────────────────────────
           el(
             PanelBody,
             { title: "Design Variant", initialOpen: true },
@@ -570,7 +402,7 @@
             }),
           ),
 
-          // Responsive Columns
+          // ── 3. RESPONSIVE COLUMNS ────────────────────────────────
           el(
             PanelBody,
             { title: "Responsive Columns", initialOpen: false },
@@ -586,113 +418,84 @@
               },
               "Set different column counts for each device size",
             ),
-            // Row 1: Desktop and Tablet
             el(
               "div",
               {
                 style: {
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                  marginBottom: "12px",
+                  gap: "10px",
+                  marginBottom: "10px",
                 },
               },
-              el(
-                "div",
-                null,
-                el(RangeControl, {
-                  label: "🖥️ Desktop",
-                  value: attributes.columnsDesktop,
-                  onChange: (value) => setAttributes({ columnsDesktop: value }),
-                  min: 1,
-                  max: 6,
-                  help: "≥1280px",
-                }),
-              ),
-              el(
-                "div",
-                null,
-                el(RangeControl, {
-                  label: "💻 Tablet",
-                  value: attributes.columnsTablet,
-                  onChange: (value) => setAttributes({ columnsTablet: value }),
-                  min: 1,
-                  max: 4,
-                  help: "768-1279px",
-                }),
-              ),
+              createNumberCell("🖥️ Desktop ", "columnsDesktop", 4, 1, 8),
+              createNumberCell("💻 Tablet ", "columnsTablet", 3, 1, 6),
             ),
-            // Row 2: Mobile and Phone
             el(
               "div",
               {
                 style: {
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
+                  gap: "10px",
                 },
               },
-              el(
-                "div",
-                null,
-                el(RangeControl, {
-                  label: "📱 Mobile",
-                  value: attributes.columnsMobile,
-                  onChange: (value) => setAttributes({ columnsMobile: value }),
-                  min: 1,
-                  max: 3,
-                  help: "480-767px",
-                }),
-              ),
-              el(
-                "div",
-                null,
-                el(RangeControl, {
-                  label: "📲 Phone",
-                  value: attributes.columnsPhone,
-                  onChange: (value) => setAttributes({ columnsPhone: value }),
-                  min: 1,
-                  max: 2,
-                  help: "<480px",
-                }),
-              ),
+              createNumberCell("📱 Mobile ", "columnsMobile", 2, 1, 4),
+              createNumberCell("📲 Phone ", "columnsPhone", 1, 1, 3),
             ),
           ),
 
-          // Image Display Options
+          // ── 4. IMAGE SETTINGS (incl. Hover Effect) ───────────────
           el(
             PanelBody,
-            { title: "Image Display Options", initialOpen: false },
+            { title: "Image Settings", initialOpen: false },
             el(RadioControl, {
               label: "Image Height Mode",
               selected: attributes.imageHeightMode,
               options: [
-                {
-                  label: "Natural (Original aspect ratio)",
-                  value: "natural",
-                },
-                {
-                  label: "Uniform (same size for all)",
-                  value: "uniform",
-                },
+                { label: "Natural (preserve aspect ratio)", value: "natural" },
+                { label: "Uniform (square crop)", value: "uniform" },
               ],
               onChange: (value) => setAttributes({ imageHeightMode: value }),
               help:
                 attributes.imageHeightMode === "natural"
-                  ? "Images maintain their original proportions"
-                  : "All images cropped to same size for consistency",
+                  ? "Images keep their original proportions"
+                  : "All images cropped to uniform square",
+            }),
+            divider,
+            el(SelectControl, {
+              label: "Image Hover Effect",
+              value: attributes.hoverEffect,
+              options: [
+                { label: "Zoom", value: "zoom" },
+                { label: "Lift (elevate card)", value: "lift" },
+                { label: "Glow (shadow)", value: "glow" },
+                { label: "None", value: "none" },
+              ],
+              onChange: (value) => setAttributes({ hoverEffect: value }),
+            }),
+            el(ToggleControl, {
+              label: "Show Gallery Image on Hover",
+              checked: attributes.showGalleryOnHover,
+              onChange: (value) => setAttributes({ showGalleryOnHover: value }),
+              help: "Switch to second product image on hover (if available)",
+            }),
+            el(ToggleControl, {
+              label: "Show Image Dots",
+              checked: attributes.showImageDots,
+              onChange: (value) => setAttributes({ showImageDots: value }),
+              help: "Display navigation dots for product images",
             }),
           ),
 
-          // Carousel Settings
+          // ── 5. CAROUSEL BEHAVIOR ─────────────────────────────────
           el(
             PanelBody,
-            { title: "Carousel Settings", initialOpen: false },
+            { title: "Carousel Behavior", initialOpen: false },
             el(ToggleControl, {
               label: "Enable Autoplay",
               checked: attributes.autoplay,
               onChange: (value) => setAttributes({ autoplay: value }),
-              help: "Automatically rotate products",
             }),
             attributes.autoplay &&
               el(RangeControl, {
@@ -704,10 +507,10 @@
                 step: 500,
               }),
             el(ToggleControl, {
-              label: "Enable Loop",
+              label: "Loop Carousel",
               checked: attributes.loop,
               onChange: (value) => setAttributes({ loop: value }),
-              help: "Return to start after reaching the end",
+              help: "Return to first slide after last slide",
             }),
             attributes.loop &&
               el(RangeControl, {
@@ -718,23 +521,16 @@
                 max: 2000,
                 step: 100,
               }),
-            el("div", {
-              style: {
-                borderTop: "1px solid #ddd",
-                marginTop: "12px",
-                paddingTop: "12px",
-              },
-            }),
             el(ToggleControl, {
-              label: "Disable Slider on Mobile (<480px)",
+              label: "Disable Mobile Slider",
               checked: attributes.disableMobileSlider,
               onChange: (value) =>
                 setAttributes({ disableMobileSlider: value }),
-              help: "Show products in a vertical list instead of slider on mobile devices",
+              help: "Show vertical list on mobile (<768px) instead of carousel",
             }),
           ),
 
-          // Navigation Settings
+          // ── 6. NAVIGATION ────────────────────────────────────────
           el(
             PanelBody,
             { title: "Navigation", initialOpen: false },
@@ -753,7 +549,7 @@
                   options: [
                     { label: "Arrows Only", value: "arrows" },
                     { label: "Dots Only", value: "dots" },
-                    { label: "Arrows & Dots", value: "both" },
+                    { label: "Both Arrows & Dots", value: "both" },
                   ],
                   onChange: (value) =>
                     setAttributes({ navigationStyle: value }),
@@ -761,141 +557,112 @@
                 (attributes.navigationStyle === "arrows" ||
                   attributes.navigationStyle === "both") &&
                   el(
-                    "div",
-                    {
-                      style: {
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "12px",
-                        marginTop: "8px",
+                    Fragment,
+                    null,
+                    el(
+                      "p",
+                      { style: { fontSize: "12px", margin: "8px 0 4px" } },
+                      "Arrow Icons (Dashicons)",
+                    ),
+                    el(
+                      "div",
+                      {
+                        style: {
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: "8px",
+                        },
                       },
-                    },
-                    el(SelectControl, {
-                      label: "Prev Arrow",
-                      value: attributes.prevArrowIcon,
-                      options: [
-                        {
-                          label: "← Chevron",
-                          value: "dashicons-arrow-left-alt2",
+                      el(TextControl, {
+                        label: "Previous",
+                        value: attributes.prevArrowIcon,
+                        onChange: (value) =>
+                          setAttributes({ prevArrowIcon: value }),
+                        placeholder: "dashicons-arrow-left-alt2",
+                      }),
+                      el(TextControl, {
+                        label: "Next",
+                        value: attributes.nextArrowIcon,
+                        onChange: (value) =>
+                          setAttributes({ nextArrowIcon: value }),
+                        placeholder: "dashicons-arrow-right-alt2",
+                      }),
+                    ),
+                    el(
+                      "p",
+                      {
+                        style: {
+                          fontSize: "11px",
+                          color: "#666",
+                          marginTop: "8px",
                         },
-                        { label: "← Arrow", value: "dashicons-arrow-left-alt" },
-                        { label: "‹ Slim", value: "dashicons-arrow-left" },
-                        { label: "« Back", value: "dashicons-controls-back" },
-                      ],
-                      onChange: (value) =>
-                        setAttributes({ prevArrowIcon: value }),
-                    }),
-                    el(SelectControl, {
-                      label: "Next Arrow",
-                      value: attributes.nextArrowIcon,
-                      options: [
-                        {
-                          label: "Chevron →",
-                          value: "dashicons-arrow-right-alt2",
-                        },
-                        {
-                          label: "Arrow →",
-                          value: "dashicons-arrow-right-alt",
-                        },
-                        { label: "Slim ›", value: "dashicons-arrow-right" },
-                        {
-                          label: "Forward »",
-                          value: "dashicons-controls-forward",
-                        },
-                      ],
-                      onChange: (value) =>
-                        setAttributes({ nextArrowIcon: value }),
-                    }),
+                      },
+                      "e.g. dashicons-chevron-left, dashicons-arrow-left-alt2",
+                    ),
+                    divider,
+                    subheading("Arrow Colors"),
+                    createColorRow([
+                      ["Arrow", "navColor", "#333333"],
+                      ["Arrow Hover", "navHoverColor", "#ffffff"],
+                    ]),
+                    createColorRow([
+                      ["Background", "navBgColor", "#ffffff"],
+                      ["BG Hover", "navBgHoverColor", "#333333"],
+                    ]),
                   ),
               ),
           ),
 
-          // Hover Effects
+          // ── 7. PRODUCT QUERY ─────────────────────────────────────
           el(
             PanelBody,
-            { title: "Hover Effects", initialOpen: false },
-            el(SelectControl, {
-              label: "Image Hover Effect",
-              value: attributes.hoverEffect,
-              options: [
-                { label: "Zoom In", value: "zoom" },
-                { label: "Lift Up", value: "lift" },
-                { label: "Glow", value: "glow" },
-                { label: "None", value: "none" },
-              ],
-              onChange: (value) => setAttributes({ hoverEffect: value }),
-            }),
-            el(ToggleControl, {
-              label: "Show Image Navigation Dots",
-              checked: attributes.showImageDots,
-              onChange: (value) => setAttributes({ showImageDots: value }),
-              help: "Display dots to navigate product gallery images",
-            }),
-            el(ToggleControl, {
-              label: "Show Gallery Image on Hover",
-              checked: attributes.showGalleryOnHover,
-              onChange: (value) => setAttributes({ showGalleryOnHover: value }),
-              help: "Replace main image with gallery image on hover",
-            }),
-          ),
-
-          // Product Query
-          el(
-            PanelBody,
-            { title: "Product Selection", initialOpen: true },
+            { title: "Product Query", initialOpen: false },
+            el(
+              "p",
+              {
+                style: { fontSize: "12px", color: "#666", marginBottom: "8px" },
+              },
+              "Select multiple categories to display products from",
+            ),
             el(
               "div",
-              null,
-              el(
-                "label",
-                {
-                  style: {
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "500",
-                  },
+              {
+                style: {
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  padding: "8px",
+                  marginBottom: "12px",
                 },
-                "Categories (Select Multiple)",
-              ),
-              el(
-                "div",
-                {
-                  style: {
-                    maxHeight: "200px",
-                    overflowY: "auto",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    padding: "8px",
-                  },
-                },
-                categoryOptions
-                  .filter((cat) => cat.value !== "") // Remove "All Categories" option
-                  .map((cat) =>
-                    el(CheckboxControl, {
-                      key: cat.value,
-                      label: cat.label,
-                      checked: attributes.categories.includes(cat.value),
-                      onChange: (checked) => {
-                        const newCategories = checked
-                          ? [...attributes.categories, cat.value]
-                          : attributes.categories.filter(
-                              (c) => c !== cat.value,
-                            );
-                        setAttributes({ categories: newCategories });
-                      },
-                    }),
-                  ),
-              ),
+              },
+              categoryOptions
+                .filter((cat) => cat.value !== "")
+                .map((cat) =>
+                  el(CheckboxControl, {
+                    key: cat.value,
+                    label: cat.label,
+                    checked:
+                      attributes.categories &&
+                      attributes.categories.includes(cat.value),
+                    onChange: (checked) => {
+                      const newCategories = checked
+                        ? [...(attributes.categories || []), cat.value]
+                        : (attributes.categories || []).filter(
+                            (c) => c !== cat.value,
+                          );
+                      setAttributes({ categories: newCategories });
+                    },
+                  }),
+                ),
             ),
             el(RangeControl, {
-              label: "Products Limit",
+              label: "Number of Products",
               value: attributes.limit,
               onChange: (value) => setAttributes({ limit: value }),
               min: 1,
-              max: 20,
-              help: "Maximum number of products to display",
+              max: 50,
             }),
-            // Order By and Order in same row
             el(
               "div",
               {
@@ -939,25 +706,86 @@
             ),
           ),
 
-          // Display Options
+          // ── 8. DISPLAY OPTIONS ───────────────────────────────────
           el(
             PanelBody,
             { title: "Display Options", initialOpen: false },
+
+            // Product Title
             el(ToggleControl, {
               label: "Show Product Title",
               checked: attributes.showTitle,
               onChange: (value) => setAttributes({ showTitle: value }),
             }),
+            attributes.showTitle &&
+              el(
+                "div",
+                {
+                  style: {
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                    marginBottom: "4px",
+                  },
+                },
+                createNumberCell(
+                  "Font Size (px)",
+                  "productTitleFontSize",
+                  16,
+                  10,
+                  40,
+                ),
+                createColorCell("Title Color", "productTitleColor", "#333333"),
+                el("div", null), // empty first col
+                createColorCell(
+                  "Hover Color",
+                  "productTitleHoverColor",
+                  "#000000",
+                ),
+              ),
+
+            divider,
+
+            // Product Price
             el(ToggleControl, {
               label: "Show Price",
               checked: attributes.showPrice,
               onChange: (value) => setAttributes({ showPrice: value }),
             }),
+            attributes.showPrice &&
+              el(
+                "div",
+                {
+                  style: {
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                    marginBottom: "4px",
+                  },
+                },
+                createNumberCell(
+                  "Font Size (px)",
+                  "productPriceFontSize",
+                  18,
+                  10,
+                  40,
+                ),
+                createColorCell("Price Color", "priceColor", "#333333"),
+                el("div", null),
+                createColorCell("Hover Color", "priceHoverColor", "#e74c3c"),
+              ),
+
+            divider,
+
             el(ToggleControl, {
               label: "Show Rating",
               checked: attributes.showRating,
               onChange: (value) => setAttributes({ showRating: value }),
             }),
+
+            divider,
+
+            // Sale Label
             el(ToggleControl, {
               label: "Show Sale Label",
               checked: attributes.showSaleLabel,
@@ -998,85 +826,15 @@
                       setAttributes({ saleLabelPosition: value }),
                   }),
                 ),
-                el(
-                  "div",
-                  {
-                    style: {
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "8px",
-                    },
-                  },
-                  el(
-                    "div",
-                    null,
-                    el(
-                      "label",
-                      {
-                        style: {
-                          display: "block",
-                          fontSize: "11px",
-                          fontWeight: "500",
-                          marginBottom: "4px",
-                          textTransform: "uppercase",
-                        },
-                      },
-                      "Badge BG",
-                    ),
-                    el("input", {
-                      type: "color",
-                      value: attributes.saleBadgeBgColor || "#e74c3c",
-                      onChange: (e) =>
-                        setAttributes({ saleBadgeBgColor: e.target.value }),
-                      style: {
-                        width: "100%",
-                        height: "36px",
-                        padding: "2px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      },
-                    }),
-                  ),
-                  el(
-                    "div",
-                    null,
-                    el(
-                      "label",
-                      {
-                        style: {
-                          display: "block",
-                          fontSize: "11px",
-                          fontWeight: "500",
-                          marginBottom: "4px",
-                          textTransform: "uppercase",
-                        },
-                      },
-                      "Badge Text",
-                    ),
-                    el("input", {
-                      type: "color",
-                      value: attributes.saleBadgeTextColor || "#ffffff",
-                      onChange: (e) =>
-                        setAttributes({ saleBadgeTextColor: e.target.value }),
-                      style: {
-                        width: "100%",
-                        height: "36px",
-                        padding: "2px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      },
-                    }),
-                  ),
-                ),
+                createColorRow([
+                  ["Badge BG", "saleBadgeBgColor", "#e74c3c"],
+                  ["Badge Text", "saleBadgeTextColor", "#ffffff"],
+                ]),
               ),
 
-            // Spacing divider between Sale and Sold Out
-            el("div", {
-              style: { borderTop: "1px solid #e0e0e0", margin: "16px 0 12px" },
-            }),
+            divider,
 
+            // Sold Out Label
             el(ToggleControl, {
               label: "Show Sold Out Label",
               checked: attributes.showOutOfStockLabel || false,
@@ -1118,89 +876,74 @@
                       setAttributes({ outOfStockLabelPosition: value }),
                   }),
                 ),
-                el(
-                  "div",
-                  {
-                    style: {
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "8px",
-                    },
-                  },
-                  el(
-                    "div",
-                    null,
-                    el(
-                      "label",
-                      {
-                        style: {
-                          display: "block",
-                          fontSize: "11px",
-                          fontWeight: "500",
-                          marginBottom: "4px",
-                          textTransform: "uppercase",
-                        },
-                      },
-                      "Badge BG",
-                    ),
-                    el("input", {
-                      type: "color",
-                      value: attributes.outOfStockBgColor || "#555555",
-                      onChange: (e) =>
-                        setAttributes({ outOfStockBgColor: e.target.value }),
-                      style: {
-                        width: "100%",
-                        height: "36px",
-                        padding: "2px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      },
-                    }),
-                  ),
-                  el(
-                    "div",
-                    null,
-                    el(
-                      "label",
-                      {
-                        style: {
-                          display: "block",
-                          fontSize: "11px",
-                          fontWeight: "500",
-                          marginBottom: "4px",
-                          textTransform: "uppercase",
-                        },
-                      },
-                      "Badge Text",
-                    ),
-                    el("input", {
-                      type: "color",
-                      value: attributes.outOfStockTextColor || "#ffffff",
-                      onChange: (e) =>
-                        setAttributes({ outOfStockTextColor: e.target.value }),
-                      style: {
-                        width: "100%",
-                        height: "36px",
-                        padding: "2px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      },
-                    }),
-                  ),
-                ),
+                createColorRow([
+                  ["Badge BG", "outOfStockBgColor", "#555555"],
+                  ["Badge Text", "outOfStockTextColor", "#ffffff"],
+                ]),
               ),
 
-            el("div", {
-              style: { borderTop: "1px solid #e0e0e0", margin: "16px 0 12px" },
-            }),
+            divider,
 
+            // ── View Product Button ──────────────────────────────────
             el(ToggleControl, {
-              label: "Show Product Link Button",
+              label: "Show View Product Button",
               checked: attributes.showProductLink,
               onChange: (value) => setAttributes({ showProductLink: value }),
             }),
+            attributes.showProductLink &&
+              el(
+                "div",
+                { style: { paddingLeft: "16px", marginTop: "8px" } },
+                subheading("Button Styling"),
+                createColorRow([
+                  ["Background", "productLinkBgColor", "#333333"],
+                  ["Text", "productLinkTextColor", "#ffffff"],
+                ]),
+                createColorRow([
+                  ["Hover BG", "productLinkHoverBgColor", "#000000"],
+                  ["Hover Text", "productLinkHoverTextColor", "#ffffff"],
+                ]),
+                createColorRow([
+                  ["Border", "productLinkBorderColor", "#333333"],
+                ]),
+                el("div", {
+                  style: { borderTop: "1px solid #e0e0e0", margin: "10px 0" },
+                }),
+                el(TextControl, {
+                  label: "Icon (Dashicon class)",
+                  value: attributes.productLinkIcon,
+                  onChange: (value) =>
+                    setAttributes({ productLinkIcon: value }),
+                  placeholder: "dashicons-external",
+                  help: "e.g., dashicons-external, dashicons-arrow-right-alt2",
+                }),
+                // Icon Position: only when both enabled + inline layout
+                attributes.showAddToCart &&
+                  attributes.buttonsLayout === "inline" &&
+                  el(RadioControl, {
+                    label: "Icon Position",
+                    selected: attributes.productLinkIconPosition,
+                    options: [
+                      { label: "Left", value: "left" },
+                      { label: "Right", value: "right" },
+                    ],
+                    onChange: (value) =>
+                      setAttributes({ productLinkIconPosition: value }),
+                  }),
+                // Single-button full-width toggle (only when other button is OFF)
+                !attributes.showAddToCart &&
+                  el(ToggleControl, {
+                    label: "Full Width Button",
+                    checked: attributes.productLinkFullWidth,
+                    onChange: (value) =>
+                      setAttributes({ productLinkFullWidth: value }),
+                    help: "Stretch button to full available width",
+                  }),
+              ),
+
+            divider,
+
+            // ── Add to Cart Button ───────────────────────────────────
             el(ToggleControl, {
               label: "Show Add to Cart Button",
               checked: attributes.showAddToCart,
@@ -1211,29 +954,128 @@
                 Fragment,
                 null,
                 el(TextControl, {
-                  label: "Add to Cart Button Text",
+                  label: "Button Text",
                   value: attributes.addToCartText,
                   onChange: (value) => setAttributes({ addToCartText: value }),
                   placeholder: "Add to Cart",
                 }),
-                el(SelectControl, {
-                  label: "Button Style",
-                  value: attributes.addToCartStyle,
-                  options: [
-                    { label: "Default", value: "default" },
-                    { label: "Primary (Blue)", value: "primary" },
-                    { label: "Outline", value: "outline" },
-                  ],
-                  onChange: (value) => setAttributes({ addToCartStyle: value }),
-                }),
+                el(
+                  "div",
+                  { style: { paddingLeft: "16px", marginTop: "8px" } },
+                  subheading("Button Styling"),
+                  createColorRow([
+                    ["Background", "addToCartBgColor", "#0073aa"],
+                    ["Text", "addToCartTextColor", "#ffffff"],
+                  ]),
+                  createColorRow([
+                    ["Hover BG", "addToCartHoverBgColor", "#005a87"],
+                    ["Hover Text", "addToCartHoverTextColor", "#ffffff"],
+                  ]),
+                  createColorRow([
+                    ["Border", "addToCartBorderColor", "#0073aa"],
+                  ]),
+                  el("div", {
+                    style: { borderTop: "1px solid #e0e0e0", margin: "10px 0" },
+                  }),
+                  el(TextControl, {
+                    label: "Icon (Dashicon class)",
+                    value: attributes.addToCartIcon,
+                    onChange: (value) =>
+                      setAttributes({ addToCartIcon: value }),
+                    placeholder: "dashicons-cart",
+                    help: "e.g., dashicons-cart, dashicons-plus",
+                  }),
+                  // Icon Position: only when both enabled + inline layout
+                  attributes.showProductLink &&
+                    attributes.buttonsLayout === "inline" &&
+                    el(RadioControl, {
+                      label: "Icon Position",
+                      selected: attributes.addToCartIconPosition,
+                      options: [
+                        { label: "Left", value: "left" },
+                        { label: "Right", value: "right" },
+                      ],
+                      onChange: (value) =>
+                        setAttributes({ addToCartIconPosition: value }),
+                    }),
+                  // Single-button full-width toggle (only when other button is OFF)
+                  !attributes.showProductLink &&
+                    el(ToggleControl, {
+                      label: "Full Width Button",
+                      checked: attributes.addToCartFullWidth,
+                      onChange: (value) =>
+                        setAttributes({ addToCartFullWidth: value }),
+                      help: "Stretch button to full available width",
+                    }),
+                ),
               ),
-            el("div", {
-              style: {
-                borderTop: "1px solid #ddd",
-                marginTop: "12px",
-                paddingTop: "12px",
-              },
-            }),
+
+            // ── Button Layout (both enabled) ─────────────────────────
+            attributes.showAddToCart &&
+              attributes.showProductLink &&
+              el(
+                Fragment,
+                null,
+                divider,
+                subheading("Button Layout"),
+                el(RadioControl, {
+                  label: "Layout Style",
+                  selected: attributes.buttonsLayout,
+                  options: [
+                    { label: "Stacked (Full Width Each)", value: "stacked" },
+                    { label: "Inline (Share Space)", value: "inline" },
+                  ],
+                  onChange: (value) => {
+                    const updates = { buttonsLayout: value };
+                    if (value === "stacked") {
+                      updates.addToCartFullWidth = true;
+                      updates.productLinkFullWidth = true;
+                    }
+                    setAttributes(updates);
+                  },
+                }),
+                el(RadioControl, {
+                  label: "Button Order",
+                  selected: attributes.buttonsOrder,
+                  options: [
+                    { label: "Add to Cart First", value: "cart-first" },
+                    { label: "View Product First", value: "link-first" },
+                  ],
+                  onChange: (value) => setAttributes({ buttonsOrder: value }),
+                }),
+                el(
+                  "div",
+                  null,
+                  el(
+                    "label",
+                    { style: labelStyle },
+                    "Gap Between Buttons (px)",
+                  ),
+                  el("input", {
+                    type: "number",
+                    value: attributes.buttonsGap,
+                    min: 0,
+                    max: 60,
+                    onChange: (e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val)) setAttributes({ buttonsGap: val });
+                    },
+                    style: {
+                      width: "100%",
+                      padding: "5px 8px",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      fontSize: "13px",
+                      boxSizing: "border-box",
+                      marginBottom: "12px",
+                    },
+                  }),
+                ),
+              ),
+
+            divider,
+
+            // ── View All Button ──────────────────────────────────────
             el(ToggleControl, {
               label: "Show View All Button",
               checked: attributes.showViewAll,
@@ -1258,11 +1100,44 @@
                   placeholder: "/shop",
                   help: "Link destination (e.g., /shop, /products)",
                 }),
+                el(
+                  "div",
+                  { style: { marginTop: "8px" } },
+                  subheading("Button Styling"),
+                  createColorRow([
+                    ["Background", "viewAllBgColor", "#333333"],
+                    ["Text", "viewAllTextColor", "#ffffff"],
+                  ]),
+                  createColorRow([
+                    ["Hover BG", "viewAllHoverBgColor", "#000000"],
+                    ["Hover Text", "viewAllHoverTextColor", "#ffffff"],
+                  ]),
+                  // Border + Font Size share one 2-col row
+                  el(
+                    "div",
+                    {
+                      style: {
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "8px",
+                        marginBottom: "10px",
+                      },
+                    },
+                    createColorCell("Border", "viewAllBorderColor", "#333333"),
+                    createNumberCell(
+                      "Font Size (px)",
+                      "viewAllFontSize",
+                      14,
+                      10,
+                      40,
+                    ),
+                  ),
+                ),
               ),
-          ),
-        ),
+          ), // end Display Options PanelBody
+        ), // end InspectorControls
 
-        // Editor Preview
+        // ── EDITOR PREVIEW ────────────────────────────────────────
         el(
           "div",
           blockProps,
@@ -1314,7 +1189,7 @@
             el(
               "div",
               { style: { fontSize: "16px", color: "#333" } },
-              el("strong", null, "🛍️Product Carousel : Biddut Blocks"),
+              el("strong", null, "🛍️ Product Carousel : Biddut Blocks"),
             ),
             el(
               "p",

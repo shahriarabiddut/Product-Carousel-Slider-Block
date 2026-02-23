@@ -4,7 +4,7 @@ Tags: woocommerce, carousel, slider, products, gallery
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://buymeacoffee.com/shahriarabiddut
@@ -38,8 +38,6 @@ Transform your WooCommerce store with a stunning, fully responsive **Product Car
 * **Optimized Performance** — Clean, well-structured code with minimal dependencies
 
 = Responsive Column Control =
-
-Set a different number of product columns for each device breakpoint:
 
 * **Desktop** (1280px and above): 1–6 columns
 * **Tablet** (768px–1279px): 1–4 columns
@@ -128,19 +126,35 @@ Full documentation is available on the WordPress Plugin Details page and in the 
 
 == Screenshots ==
 
-1. Gallery variant with minimalist style — image-first, centered layout
-2. Card Style variant with modern card design and hover effects
-3. Gutenberg block settings panel overview
-4. Header (Title & Subtitle), Typography, and Section Color controls
-5. Product color, Navigation color, and Design Variant controls
-6. Responsive column settings and Image Display Mode options
-7. Carousel settings — autoplay, loop, speed, and navigation type
+1. Gallery variant with minimalist style image-first, centered layout no title
+2. Gallery variant with minimalist style without Add To Cart Button and Title
+3. Card Style variant with modern card design and hover effects , without Add To Cart 
+4. Gutenberg block settings panel overview
+5. Header (Title & Subtitle) with Typography, Color and show/hide controls and Design Variant controls
+6. Responsive column settings and Image Settings
+7. Carousel Behavior — autoplay, loop, speed, and Disable Mobile Slider And Navigation Controls
 8. Product Query settings — multiple categories, ordering, and Hover Effects
 9. Display options panel — show/hide elements and Add to Cart settings
 10. Mobile responsive view — carousel on smaller screens
 11. Mobile responsive view — vertical stack layout with slider disabled
 
 == Changelog ==
+= 1.1.0 - 2026-02-20 =
+* Improved: Sidebar panels restructured — Typography, Section Colors, Product Colors,
+  and Navigation Colors consolidated into context-aware panels for a cleaner editor experience
+* Improved: "Image Display Options" and "Hover Effects" merged into a single "Image Settings" panel
+* Improved: "Product Selection" panel renamed to "Product Query" for clarity
+* Improved: "Carousel Settings" panel renamed to "Carousel Behavior"
+* Improved: Arrow icon selection changed from dropdown to free-text input, supporting any Dashicons class
+* Improved: Products limit increased from 20 to 50
+* Improved: Color pickers now use compact 2-column grid layout with reset-to-default buttons
+* Added: Full color customization for View Product button (background, text, hover, border)
+* Added: Full color customization for Add to Cart button (background, text, hover, border)
+* Added: Icon selector and icon position controls for both View Product and Add to Cart buttons
+* Added: Full-width toggle for individual buttons when only one button is enabled
+* Added: Button Layout controls when both buttons are enabled (Stacked / Inline, order, gap)
+* Added: Full color and font-size customization for View All button
+* Removed: Add to Cart "Button Style" dropdown (Default / Primary / Outline) — replaced by full color controls
 
 = 1.0.0 - 2026-02-18 =
 * Initial release
@@ -175,11 +189,9 @@ Full documentation is available on the WordPress Plugin Details page and in the 
 
 This plugin does not collect, store, or transmit any user data. It only reads and displays WooCommerce product information already present in your database.
 
-= Support =
+= Support or Feature Requests=
 
-For support, bug reports, or feature requests, please visit:
-
-* [GitHub Repository](https://github.com/shahriarabiddut/product-carousel-slider-biddut-block)
+* [GitHub Repository](https://github.com/shahriarabiddut/Product-Carousel-Slider-Block)
 * [WordPress Support Forum](https://wordpress.org/support/plugin/product-carousel-slider-biddut-block/)
 
 = Contributing =
