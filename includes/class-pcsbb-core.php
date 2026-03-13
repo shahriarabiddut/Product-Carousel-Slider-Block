@@ -40,6 +40,9 @@ class PCSBB_Core {
 		if ( $this->is_woocommerce_active() ) {
 			$this->loader->add_action( 'wp_enqueue_scripts', $this, 'enqueue_public_assets' );
 		}
+
+		// Register admin page
+		$this->loader->add_action( 'admin_menu', $this, 'register_admin_page' );
 	}
 
 	/**
@@ -70,7 +73,7 @@ class PCSBB_Core {
 		?>
 		<div class="notice notice-warning is-dismissible">
 			<p>
-				<strong><?php esc_html_e( 'Product Carousel Slider Biddut Block:', 'product-carousel-slider-biddut-block' ); ?></strong>
+				<strong><?php esc_html_e( 'Product Carousel Slider for WooCommerce:', 'product-carousel-slider-biddut-block' ); ?></strong>
 				<?php esc_html_e( 'This plugin requires WooCommerce to be installed and activated.', 'product-carousel-slider-biddut-block' ); ?>
 				<a href="<?php echo esc_url( admin_url( 'plugin-install.php?s=woocommerce&tab=search&type=term' ) ); ?>">
 					<?php esc_html_e( 'Install WooCommerce', 'product-carousel-slider-biddut-block' ); ?>
@@ -122,5 +125,13 @@ class PCSBB_Core {
 	public function register_block() {
 		$gutenberg = new PCSBB_Gutenberg_Block();
 		$gutenberg->register();
+	}
+
+	/**
+	 * Register admin page
+	 */
+	public function register_admin_page() {
+		$admin = new PCSBB_Admin();
+		$admin->register_admin_menu();
 	}
 }

@@ -1,15 +1,15 @@
-=== Product Carousel Slider Biddut Block ===
+=== Product Carousel Slider for WooCommerce ===
 Contributors: shahriarabiddut
 Tags: woocommerce, carousel, slider, products, gallery
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://buymeacoffee.com/shahriarabiddut
 
-Beautiful, responsive Product Carousel Slider Block with responsive columns, hover effects, gallery navigation, and add to cart functionality.
+Beautiful, Responsive Product Carousel Slider Block with responsive columns, hover effects, gallery navigation, and add to cart functionality.
 
 == Description ==
 
@@ -139,6 +139,16 @@ Full documentation is available on the WordPress Plugin Details page and in the 
 11. Mobile responsive view — vertical stack layout with slider disabled
 
 == Changelog ==
+= 1.2.0 - 2026-03-12 =
+* Added: Mobile Product Width control (under Design Variant) — choose between Full Width or Centered layout for products on mobile, applies to both slider and vertical stack modes
+* Added: Outer Padding & Margin controls (under Responsive Columns) — set independent X (left/right) and Y (top/bottom) padding and margin per device breakpoint (Desktop, Tablet, Mobile, Phone) for precise spacing control
+* Added: Navigation Arrow Size controls (under Navigation Settings) — independently set arrow button diameter and icon size per device breakpoint with live preview
+* Fixed: Navigation arrows were oval/stretched due to Dashicons stylesheet width conflict — resolved with explicit !important overrides and aspect-ratio locking on all devices
+* Fixed: Arrow vertical position now correctly centers on the product image area (not the full card including product info below), using JS image-height measurement with load-event fallback
+* Fixed: Arrow icon padding was too wide on large devices, making buttons appear rectangular — resolved with padding:0 and display:flex centering
+* Improved: Arrow size defaults refined across all breakpoints (Desktop/Tablet: 30px button / 14px icon, Mobile: 26px / 11px, Phone: 22px / 10px)
+* Improved: Per-block scoped CSS output via unique block ID for responsive padding, margin, and arrow sizes — no global style conflicts between multiple carousel instances on the same page
+
 = 1.1.0 - 2026-02-20 =
 * Improved: Sidebar panels restructured — Typography, Section Colors, Product Colors,
   and Navigation Colors consolidated into context-aware panels for a cleaner editor experience

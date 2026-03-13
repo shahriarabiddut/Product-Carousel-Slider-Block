@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider Biddut Block v1.1.0
+ * Product Carousel Slider for WooCommerce v1.2.0
  */
 
 (function ($) {
@@ -53,6 +53,7 @@
       this.disableMobileSlider =
         this.$wrapper.data("disable-mobile-slider") === true ||
         this.$wrapper.data("disable-mobile-slider") === "true";
+      this.sliderFitMode = this.$wrapper.data("slider-fit-mode") || "peek";
 
       // State
       this.currentIndex = 0;
@@ -85,6 +86,7 @@
           // Normal carousel mode
           this.buildStructure();
           this.calculateDimensions();
+          this.updateArrowVerticalCenter();
           this.setupNavigation();
           this.setupDragging();
           this.setupHoverEffects();
@@ -110,6 +112,7 @@
     }
 
     hideLoader() {
+      const self = this;
       setTimeout(() => {
         if (this.$loader) {
           this.$loader.fadeOut(300, function () {
@@ -117,6 +120,8 @@
           });
         }
         this.$wrapper.removeClass("pcsbb-loading");
+        // Re-measure arrow vertical position after all content is rendered
+        self.updateArrowVerticalCenter();
       }, 400);
     }
 
@@ -163,6 +168,16 @@
 
       if (this.totalItems === 0) return;
 
+      // Fit mode: strip the breathing-room padding/negative-margin from the wrapper.
+      // In peek mode the wrapper is 12px wider than its parent (negative margin trick),
+      // so items sized to parent-width leave 12px of track visible = next slide peeks.
+      // In fit mode we want ZERO peek: items must equal wrapper width exactly.
+      // Removing the horizontal breathing room achieves this; vertical padding is kept
+      // so card top/bottom shadows still have space.
+      if (this.sliderFitMode === "fit") {
+        this.$wrapper.addClass("pcsbb-fit-mode");
+      }
+
       // Create container
       const showArrows =
         this.showNavigation &&
@@ -206,6 +221,11 @@
     }
 
     calculateDimensions() {
+      // In fit mode, the wrapper has had its horizontal padding/neg-margin stripped
+      // (class pcsbb-fit-mode) so $wrapper.width() equals the true parent content width.
+      // Items sized to this fill the wrapper exactly — no peek.
+      // In peek mode, $wrapper.width() = parent + 12px (neg-margin trick), so items
+      // are slightly wider than N×(parent/N), causing the natural next-slide sliver.
       const wrapperWidth = this.$wrapper.width();
       const windowWidth = $(window).width();
 
@@ -282,6 +302,49 @@
         const index = $(this).data("index");
         self.goToSlide(index);
       });
+    }
+
+    updateArrowVerticalCenter() {
+      if (!this.$container || !this.$container.length) return;
+
+      const self = this;
+
+      const applyCenter = function () {
+        if (!self.$container || !self.$container.length) return;
+
+        const $firstImgWrapper = self.$items
+          .first()
+          .find(".pcsbb-product-image-wrapper");
+
+        if (!$firstImgWrapper.length) return;
+
+        const imgHeight = $firstImgWrapper.outerHeight(false) || 0;
+        if (imgHeight > 0) {
+          // Offset from container top = half image height + wrapper top padding (16px)
+          const arrowTop = imgHeight / 2 + 16;
+          self.$container[0].style.setProperty(
+            "--pcsbb-image-center",
+            arrowTop + "px",
+          );
+        }
+      };
+
+      // Try immediately (works for cached/uniform images)
+      applyCenter();
+
+      // Re-measure after first product image finishes loading (natural height mode)
+      const $firstImg = this.$items.first().find(".pcsbb-main-image");
+      if ($firstImg.length) {
+        const imgEl = $firstImg[0];
+        if (imgEl && !imgEl.complete) {
+          $firstImg.one("load error", function () {
+            applyCenter();
+          });
+        } else {
+          // Image complete but layout may not have repainted yet
+          setTimeout(applyCenter, 50);
+        }
+      }
     }
 
     setupNavigation() {
@@ -611,6 +674,7 @@
             // Same mode — just recalculate widths and re-translate
             if (self.$items && self.$items.length) {
               self.calculateDimensions();
+              self.updateArrowVerticalCenter();
               self.$track.css("transition", "none");
               self.goToSlide(self.currentIndex);
               setTimeout(function () {
@@ -651,7 +715,7 @@
       $items.css("width", "").css("transform", "");
       this.$wrapper.append($items);
       this.$wrapper.removeClass(
-        "dragging pcsbb-loading pcsbb-mobile-vertical-mode",
+        "dragging pcsbb-loading pcsbb-mobile-vertical-mode pcsbb-fit-mode",
       );
 
       // Reset references

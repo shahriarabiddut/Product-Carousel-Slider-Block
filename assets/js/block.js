@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider Biddut Block - Gutenberg Block v1.1.0
+ * Product Carousel Slider for WooCommerce - Gutenberg Block v1.2.0
  */
 
 (function () {
@@ -15,13 +15,13 @@
     RadioControl,
   } = wp.components;
   const { __ } = wp.i18n;
-  const { createElement: el, Fragment } = wp.element;
+  const { createElement: el, Fragment, useState } = wp.element;
   const { useSelect } = wp.data;
 
   registerBlockType("pcsbb/carousel", {
     title: "Product Carousel Slider",
     description:
-      "Product Carousel Slider Biddut Block with Card and Art Gallery styles",
+      "Product Carousel Slider for WooCommerce with Card and Art Gallery styles",
     category: "biddut-blocks",
     icon: "images-alt2",
     keywords: [
@@ -61,12 +61,33 @@
 
       // Design Variant
       variant: { type: "string", default: "gallery" },
+      // Task 1: Mobile product width (under Design Variant)
+      mobileProductWidth: { type: "string", default: "center" },
 
       // Responsive Columns
       columnsDesktop: { type: "number", default: 4 },
       columnsTablet: { type: "number", default: 3 },
       columnsMobile: { type: "number", default: 2 },
       columnsPhone: { type: "number", default: 1 },
+
+      // Task 2: Outer padding per device (under Responsive Columns)
+      outerPadXDesktop: { type: "number", default: 0 },
+      outerPadYDesktop: { type: "number", default: 0 },
+      outerPadXTablet: { type: "number", default: 0 },
+      outerPadYTablet: { type: "number", default: 0 },
+      outerPadXMobile: { type: "number", default: 0 },
+      outerPadYMobile: { type: "number", default: 0 },
+      outerPadXPhone: { type: "number", default: 0 },
+      outerPadYPhone: { type: "number", default: 0 },
+      // Task 2: Outer margin per device
+      outerMarXDesktop: { type: "number", default: 0 },
+      outerMarYDesktop: { type: "number", default: 0 },
+      outerMarXTablet: { type: "number", default: 0 },
+      outerMarYTablet: { type: "number", default: 0 },
+      outerMarXMobile: { type: "number", default: 0 },
+      outerMarYMobile: { type: "number", default: 0 },
+      outerMarXPhone: { type: "number", default: 0 },
+      outerMarYPhone: { type: "number", default: 0 },
 
       // Image Display
       imageHeightMode: { type: "string", default: "natural" },
@@ -77,12 +98,22 @@
       loop: { type: "boolean", default: true },
       transitionSpeed: { type: "number", default: 500 },
       disableMobileSlider: { type: "boolean", default: false },
+      sliderFitMode: { type: "string", default: "peek" },
 
       // Navigation
       showNavigation: { type: "boolean", default: true },
       navigationStyle: { type: "string", default: "arrows" },
       prevArrowIcon: { type: "string", default: "dashicons-arrow-left-alt2" },
       nextArrowIcon: { type: "string", default: "dashicons-arrow-right-alt2" },
+      // Task 4: Arrow size controls per device
+      navArrowSizeDesktop: { type: "number", default: 30 },
+      navArrowSizeTablet: { type: "number", default: 30 },
+      navArrowSizeMobile: { type: "number", default: 26 },
+      navArrowSizePhone: { type: "number", default: 22 },
+      navIconSizeDesktop: { type: "number", default: 13 },
+      navIconSizeTablet: { type: "number", default: 13 },
+      navIconSizeMobile: { type: "number", default: 11 },
+      navIconSizePhone: { type: "number", default: 10 },
 
       // Hover / Gallery
       hoverEffect: { type: "string", default: "zoom" },
@@ -157,6 +188,11 @@
     edit: function (props) {
       const { attributes, setAttributes } = props;
       const blockProps = useBlockProps ? useBlockProps() : {};
+
+      // ── COLLAPSIBLE STATE ─────────────────────────────────────────
+      const [paddingOpen, setPaddingOpen] = useState(false);
+      const [marginOpen, setMarginOpen] = useState(false);
+      const [arrowSizeOpen, setArrowSizeOpen] = useState(false);
 
       const categories = useSelect((select) => {
         const store = select("core");
@@ -283,6 +319,127 @@
           }),
         );
 
+      // Bare number input (no label wrapper — for use in compact 4-col grids)
+      const numInput = (attributeKey, defaultVal, min, max) =>
+        el("input", {
+          type: "number",
+          value:
+            attributes[attributeKey] !== undefined
+              ? attributes[attributeKey]
+              : defaultVal,
+          min,
+          max,
+          onChange: (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (!isNaN(val)) setAttributes({ [attributeKey]: val });
+          },
+          style: {
+            width: "100%",
+            padding: "4px 5px",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            fontSize: "12px",
+            boxSizing: "border-box",
+            textAlign: "center",
+          },
+        });
+
+      // Collapsible section toggle header
+      const collapsibleToggle = (label, isOpen, setOpen) =>
+        el(
+          "div",
+          {
+            style: {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              cursor: "pointer",
+              padding: "7px 10px",
+              background: "#f0f0f0",
+              borderRadius: "4px",
+              marginBottom: isOpen ? "10px" : "0",
+              userSelect: "none",
+            },
+            onClick: () => setOpen(!isOpen),
+          },
+          el(
+            "span",
+            { style: { fontSize: "12px", fontWeight: "600", color: "#333" } },
+            label,
+          ),
+          el(
+            "span",
+            { style: { fontSize: "11px", color: "#666" } },
+            isOpen ? "▲" : "▼",
+          ),
+        );
+
+      // 4-device compact grid (row labels + 4 inputs per row)
+      // rows = [ { label, keys: [desk, tab, mob, phone], defaults, min, max } ]
+      const deviceGrid4 = (rows) =>
+        el(
+          "div",
+          {
+            style: {
+              display: "grid",
+              gridTemplateColumns: "28px 1fr 1fr 1fr 1fr",
+              gap: "5px",
+              alignItems: "center",
+              marginBottom: "6px",
+            },
+          },
+          // header row
+          el("div", null),
+          el(
+            "div",
+            {
+              style: { ...labelStyle, textAlign: "center", marginBottom: "0" },
+            },
+            "🖥️",
+          ),
+          el(
+            "div",
+            {
+              style: { ...labelStyle, textAlign: "center", marginBottom: "0" },
+            },
+            "💻",
+          ),
+          el(
+            "div",
+            {
+              style: { ...labelStyle, textAlign: "center", marginBottom: "0" },
+            },
+            "📱",
+          ),
+          el(
+            "div",
+            {
+              style: { ...labelStyle, textAlign: "center", marginBottom: "0" },
+            },
+            "📲",
+          ),
+          // data rows
+          ...rows.flatMap(({ label, keys, defaults, min, max }) => [
+            el(
+              "div",
+              {
+                style: {
+                  ...labelStyle,
+                  marginBottom: "0",
+                  fontSize: "11px",
+                  fontWeight: "600",
+                  color: "#555",
+                },
+              },
+              label,
+            ),
+            numInput(keys[0], defaults[0], min, max),
+            numInput(keys[1], defaults[1], min, max),
+            numInput(keys[2], defaults[2], min, max),
+            numInput(keys[3], defaults[3], min, max),
+          ]),
+        );
+
       // Section divider line
       const divider = el("div", {
         style: { borderTop: "1px solid #e0e0e0", margin: "14px 0 12px" },
@@ -400,6 +557,7 @@
                   ? "Clean gallery style with centered product info"
                   : "Modern card style with borders and shadows",
             }),
+            divider,
           ),
 
           // ── 3. RESPONSIVE COLUMNS ────────────────────────────────
@@ -443,6 +601,105 @@
               createNumberCell("📱 Mobile ", "columnsMobile", 2, 1, 4),
               createNumberCell("📲 Phone ", "columnsPhone", 1, 1, 3),
             ),
+
+            // ── Outer Padding (collapsible) ──────────────────────────
+            divider,
+            collapsibleToggle(
+              "Outer Padding (px)",
+              paddingOpen,
+              setPaddingOpen,
+            ),
+            paddingOpen &&
+              el(
+                Fragment,
+                null,
+                el(
+                  "p",
+                  {
+                    style: {
+                      fontSize: "11px",
+                      color: "#757575",
+                      margin: "0 0 8px",
+                    },
+                  },
+                  "X = left & right  |  Y = top & bottom",
+                ),
+                deviceGrid4([
+                  {
+                    label: "X",
+                    keys: [
+                      "outerPadXDesktop",
+                      "outerPadXTablet",
+                      "outerPadXMobile",
+                      "outerPadXPhone",
+                    ],
+                    defaults: [0, 0, 0, 0],
+                    min: 0,
+                    max: 200,
+                  },
+                  {
+                    label: "Y",
+                    keys: [
+                      "outerPadYDesktop",
+                      "outerPadYTablet",
+                      "outerPadYMobile",
+                      "outerPadYPhone",
+                    ],
+                    defaults: [0, 0, 0, 0],
+                    min: 0,
+                    max: 200,
+                  },
+                ]),
+              ),
+
+            // ── Outer Margin (collapsible) ───────────────────────────
+            el(
+              "div",
+              { style: { marginTop: paddingOpen ? "10px" : "0" } },
+              collapsibleToggle("Outer Margin (px)", marginOpen, setMarginOpen),
+            ),
+            marginOpen &&
+              el(
+                Fragment,
+                null,
+                el(
+                  "p",
+                  {
+                    style: {
+                      fontSize: "11px",
+                      color: "#757575",
+                      margin: "0 0 8px",
+                    },
+                  },
+                  "X = left & right  |  Y = top & bottom",
+                ),
+                deviceGrid4([
+                  {
+                    label: "X",
+                    keys: [
+                      "outerMarXDesktop",
+                      "outerMarXTablet",
+                      "outerMarXMobile",
+                      "outerMarXPhone",
+                    ],
+                    defaults: [0, 0, 0, 0],
+                    min: -200,
+                    max: 200,
+                  },
+                  {
+                    label: "Y",
+                    keys: [
+                      "outerMarYDesktop",
+                      "outerMarYTablet",
+                      "outerMarYMobile",
+                      "outerMarYPhone",
+                    ],
+                    defaults: [0, 0, 0, 0],
+                    min: -200,
+                    max: 200,
+                  },
+                ]),
+              ),
           ),
 
           // ── 4. IMAGE SETTINGS (incl. Hover Effect) ───────────────
@@ -528,6 +785,29 @@
                 setAttributes({ disableMobileSlider: value }),
               help: "Show vertical list on mobile (<768px) instead of carousel",
             }),
+            divider,
+            el(
+              "p",
+              { style: { ...labelStyle, marginBottom: "6px" } },
+              "Slide Display Mode",
+            ),
+            el(RadioControl, {
+              selected: attributes.sliderFitMode,
+              options: [
+                {
+                  label:
+                    "Peek — shows a sliver of the next slide (current default)",
+                  value: "peek",
+                },
+                {
+                  label:
+                    "Fit — selected column count fills the full slider width exactly",
+                  value: "fit",
+                },
+              ],
+              onChange: (value) => setAttributes({ sliderFitMode: value }),
+              help: "Peek entices users to swipe. Fit shows clean full-width slides.",
+            }),
           ),
 
           // ── 6. NAVIGATION ────────────────────────────────────────
@@ -609,6 +889,55 @@
                       ["Background", "navBgColor", "#ffffff"],
                       ["BG Hover", "navBgHoverColor", "#333333"],
                     ]),
+                    divider,
+                    // Task 4: Arrow size controls per device (collapsible)
+                    collapsibleToggle(
+                      "Arrow Size (px) — per Device",
+                      arrowSizeOpen,
+                      setArrowSizeOpen,
+                    ),
+                    arrowSizeOpen &&
+                      el(
+                        Fragment,
+                        null,
+                        el(
+                          "p",
+                          {
+                            style: {
+                              fontSize: "11px",
+                              color: "#757575",
+                              margin: "0 0 8px",
+                            },
+                          },
+                          "Btn = circle diameter  |  Icon = dashicon size inside",
+                        ),
+                        deviceGrid4([
+                          {
+                            label: "Btn",
+                            keys: [
+                              "navArrowSizeDesktop",
+                              "navArrowSizeTablet",
+                              "navArrowSizeMobile",
+                              "navArrowSizePhone",
+                            ],
+                            defaults: [30, 30, 26, 22],
+                            min: 14,
+                            max: 60,
+                          },
+                          {
+                            label: "Icon",
+                            keys: [
+                              "navIconSizeDesktop",
+                              "navIconSizeTablet",
+                              "navIconSizeMobile",
+                              "navIconSizePhone",
+                            ],
+                            defaults: [13, 13, 11, 10],
+                            min: 6,
+                            max: 30,
+                          },
+                        ]),
+                      ),
                   ),
               ),
           ),

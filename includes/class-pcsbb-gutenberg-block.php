@@ -1,6 +1,6 @@
 <?php
 /**
- * PCSBB Gutenberg Block Class v1.1.0
+ * PCSBB Gutenberg Block Class v1.2.0
  *
  * @package ProductCarouselSliderBiddutBlock
  */
@@ -15,610 +15,803 @@ if ( ! defined( 'ABSPATH' ) ) {
 class PCSBB_Gutenberg_Block {
 
 	/**
-	 * Constructor
+	 * Register the block
 	 */
-	public function __construct() {
+	public function register() {
+		// Register block category
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ), 10, 2 );
+
+		// Enqueue editor assets
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
+
+		// Register the block type
+		register_block_type(
+			'pcsbb/carousel',
+			array(
+				'render_callback' => array( $this, 'render_block' ),
+				'attributes'      => $this->get_block_attributes(),
+			)
+		);
 	}
 
 	/**
 	 * Register custom block category
-	 *
-	 * @param array  $categories Existing block categories.
-	 * @param object $post       Current post or editor context.
-	 * @return array
 	 */
 	public function register_block_category( $categories, $post ) {
-		// Avoid duplicate: check if 'biddut-blocks' already exists.
-		foreach ( $categories as $cat ) {
-			if ( 'biddut-blocks' === $cat['slug'] ) {
+		foreach ( $categories as $category ) {
+			if ( $category['slug'] === 'biddut-blocks' ) {
 				return $categories;
 			}
 		}
-		return array_merge(
+		array_unshift(
+			$categories,
 			array(
-				array(
-					'slug'  => 'biddut-blocks',
-					'title' => __( 'Biddut Blocks', 'product-carousel-slider-biddut-block' ),
-					'icon'  => null,
-				),
-			),
-			$categories
+				'slug'  => 'biddut-blocks',
+				'title' => __( 'Biddut Blocks', 'product-carousel-slider-biddut-block' ),
+				'icon'  => 'screenoptions',
+			)
 		);
+		return $categories;
 	}
 
 	/**
-	 * Register block type and its editor assets.
+	 * Enqueue editor assets
 	 */
-	public function register() {
-		if ( ! function_exists( 'register_block_type' ) ) {
-			return;
-		}
+	public function enqueue_editor_assets() {
+		// Ensure dashicons available in editor
+		wp_enqueue_style( 'dashicons' );
 
-		// Register editor script — wp-data is required for useSelect (category fetching).
-		wp_register_script(
+		wp_enqueue_script(
 			'pcsbb-block-editor',
 			PCSBB_PLUGIN_URL . 'assets/js/block.js',
-			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'wp-data' ),
+			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-data' ),
 			PCSBB_VERSION,
 			true
 		);
 
-		wp_register_style(
-			'pcsbb-block-editor-style',
+		wp_enqueue_style(
+			'pcsbb-block-editor',
 			PCSBB_PLUGIN_URL . 'assets/css/block.css',
-			array(),
+			array( 'wp-edit-blocks' ),
 			PCSBB_VERSION
-		);
-
-		wp_register_style(
-			'pcsbb-block-style',
-			PCSBB_PLUGIN_URL . 'assets/css/public.css',
-			array(),
-			PCSBB_VERSION
-		);
-
-		register_block_type(
-			'pcsbb/carousel',
-			array(
-				'api_version'     => 2,
-				'editor_script'   => 'pcsbb-block-editor',
-				'editor_style'    => 'pcsbb-block-editor-style',
-				'style'           => 'pcsbb-block-style',
-				'render_callback' => array( $this, 'render_block' ),
-			)
 		);
 	}
 
 	/**
-	 * Render block on frontend.
+	 * Get all block attribute definitions
 	 *
-	 * @param array  $attributes Block attributes.
-	 * @param string $content    Inner block content (unused for server-rendered blocks).
-	 * @return string
+	 * @return array
 	 */
-	public function render_block( $attributes, $content = '' ) {
+	private function get_block_attributes() {
+		return array(
+			// Header
+			'showHeader'               => array( 'type' => 'boolean', 'default' => false ),
+			'sectionTitle'             => array( 'type' => 'string',  'default' => '' ),
+			'sectionSubtitle'          => array( 'type' => 'string',  'default' => '' ),
+			'sectionTitleFontSize'     => array( 'type' => 'number',  'default' => 32 ),
+			'sectionSubtitleFontSize'  => array( 'type' => 'number',  'default' => 24 ),
+			'sectionTitleColor'        => array( 'type' => 'string',  'default' => '#333333' ),
+			'sectionSubtitleColor'     => array( 'type' => 'string',  'default' => '#666666' ),
+
+			// Product Typography
+			'productTitleFontSize'     => array( 'type' => 'number',  'default' => 16 ),
+			'productPriceFontSize'     => array( 'type' => 'number',  'default' => 18 ),
+			'productTitleColor'        => array( 'type' => 'string',  'default' => '#333333' ),
+			'productTitleHoverColor'   => array( 'type' => 'string',  'default' => '#000000' ),
+			'priceColor'               => array( 'type' => 'string',  'default' => '#333333' ),
+			'priceHoverColor'          => array( 'type' => 'string',  'default' => '#e74c3c' ),
+
+			// Nav Colors
+			'navColor'                 => array( 'type' => 'string',  'default' => '#333333' ),
+			'navHoverColor'            => array( 'type' => 'string',  'default' => '#ffffff' ),
+			'navBgColor'               => array( 'type' => 'string',  'default' => '#ffffff' ),
+			'navBgHoverColor'          => array( 'type' => 'string',  'default' => '#333333' ),
+
+			// Design Variant
+			'variant'                  => array( 'type' => 'string',  'default' => 'gallery' ),
+
+			// Mobile Product Width (always centered — full-width 100vw is theme-dependent and unreliable)
+			'mobileProductWidth'       => array( 'type' => 'string',  'default' => 'center' ),
+
+			// Responsive Columns
+			'columnsDesktop'           => array( 'type' => 'number',  'default' => 4 ),
+			'columnsTablet'            => array( 'type' => 'number',  'default' => 3 ),
+			'columnsMobile'            => array( 'type' => 'number',  'default' => 2 ),
+			'columnsPhone'             => array( 'type' => 'number',  'default' => 1 ),
+
+			// Task 2: Outer padding per device (under Responsive Columns)
+			'outerPadXDesktop'         => array( 'type' => 'number',  'default' => 0 ),
+			'outerPadYDesktop'         => array( 'type' => 'number',  'default' => 0 ),
+			'outerPadXTablet'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerPadYTablet'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerPadXMobile'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerPadYMobile'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerPadXPhone'           => array( 'type' => 'number',  'default' => 0 ),
+			'outerPadYPhone'           => array( 'type' => 'number',  'default' => 0 ),
+
+			// Task 2: Outer margin per device
+			'outerMarXDesktop'         => array( 'type' => 'number',  'default' => 0 ),
+			'outerMarYDesktop'         => array( 'type' => 'number',  'default' => 0 ),
+			'outerMarXTablet'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerMarYTablet'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerMarXMobile'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerMarYMobile'          => array( 'type' => 'number',  'default' => 0 ),
+			'outerMarXPhone'           => array( 'type' => 'number',  'default' => 0 ),
+			'outerMarYPhone'           => array( 'type' => 'number',  'default' => 0 ),
+
+			// Image Display
+			'imageHeightMode'          => array( 'type' => 'string',  'default' => 'natural' ),
+
+			// Carousel Behavior
+			'autoplay'                 => array( 'type' => 'boolean', 'default' => false ),
+			'autoplayDelay'            => array( 'type' => 'number',  'default' => 5000 ),
+			'loop'                     => array( 'type' => 'boolean', 'default' => true ),
+			'transitionSpeed'          => array( 'type' => 'number',  'default' => 500 ),
+			'disableMobileSlider'      => array( 'type' => 'boolean', 'default' => false ),
+			'sliderFitMode'            => array( 'type' => 'string',  'default' => 'peek' ),
+
+			// Navigation
+			'showNavigation'           => array( 'type' => 'boolean', 'default' => true ),
+			'navigationStyle'          => array( 'type' => 'string',  'default' => 'arrows' ),
+			'prevArrowIcon'            => array( 'type' => 'string',  'default' => 'dashicons-arrow-left-alt2' ),
+			'nextArrowIcon'            => array( 'type' => 'string',  'default' => 'dashicons-arrow-right-alt2' ),
+
+			// Task 4: Arrow size controls per device (under Navigation)
+			'navArrowSizeDesktop'      => array( 'type' => 'number',  'default' => 30 ),
+			'navArrowSizeTablet'       => array( 'type' => 'number',  'default' => 30 ),
+			'navArrowSizeMobile'       => array( 'type' => 'number',  'default' => 26 ),
+			'navArrowSizePhone'        => array( 'type' => 'number',  'default' => 22 ),
+			'navIconSizeDesktop'       => array( 'type' => 'number',  'default' => 13 ),
+			'navIconSizeTablet'        => array( 'type' => 'number',  'default' => 13 ),
+			'navIconSizeMobile'        => array( 'type' => 'number',  'default' => 11 ),
+			'navIconSizePhone'         => array( 'type' => 'number',  'default' => 10 ),
+
+			// Hover / Gallery
+			'hoverEffect'              => array( 'type' => 'string',  'default' => 'zoom' ),
+			'showImageDots'            => array( 'type' => 'boolean', 'default' => false ),
+			'showGalleryOnHover'       => array( 'type' => 'boolean', 'default' => true ),
+
+			// Product Query
+			'categories'               => array( 'type' => 'array',   'default' => array(), 'items' => array( 'type' => 'string' ) ),
+			'limit'                    => array( 'type' => 'number',  'default' => 12 ),
+			'orderby'                  => array( 'type' => 'string',  'default' => 'date' ),
+			'order'                    => array( 'type' => 'string',  'default' => 'DESC' ),
+
+			// Display Options
+			'showTitle'                => array( 'type' => 'boolean', 'default' => true ),
+			'showPrice'                => array( 'type' => 'boolean', 'default' => true ),
+			'showRating'               => array( 'type' => 'boolean', 'default' => false ),
+
+			// Sale Label
+			'showSaleLabel'            => array( 'type' => 'boolean', 'default' => true ),
+			'saleLabelText'            => array( 'type' => 'string',  'default' => 'SALE' ),
+			'saleLabelPosition'        => array( 'type' => 'string',  'default' => 'top-right' ),
+			'saleBadgeBgColor'         => array( 'type' => 'string',  'default' => '#e74c3c' ),
+			'saleBadgeTextColor'       => array( 'type' => 'string',  'default' => '#ffffff' ),
+
+			// Out of Stock Label
+			'showOutOfStockLabel'      => array( 'type' => 'boolean', 'default' => false ),
+			'outOfStockLabelText'      => array( 'type' => 'string',  'default' => 'Sold Out' ),
+			'outOfStockLabelPosition'  => array( 'type' => 'string',  'default' => 'top-right' ),
+			'outOfStockBgColor'        => array( 'type' => 'string',  'default' => '#555555' ),
+			'outOfStockTextColor'      => array( 'type' => 'string',  'default' => '#ffffff' ),
+
+			// View Product Button
+			'showProductLink'          => array( 'type' => 'boolean', 'default' => false ),
+			'productLinkBgColor'       => array( 'type' => 'string',  'default' => '#333333' ),
+			'productLinkTextColor'     => array( 'type' => 'string',  'default' => '#ffffff' ),
+			'productLinkHoverBgColor'  => array( 'type' => 'string',  'default' => '#000000' ),
+			'productLinkHoverTextColor'=> array( 'type' => 'string',  'default' => '#ffffff' ),
+			'productLinkBorderColor'   => array( 'type' => 'string',  'default' => '#333333' ),
+			'productLinkIcon'          => array( 'type' => 'string',  'default' => 'dashicons-external' ),
+			'productLinkIconPosition'  => array( 'type' => 'string',  'default' => 'right' ),
+			'productLinkFullWidth'     => array( 'type' => 'boolean', 'default' => false ),
+
+			// Add to Cart Button
+			'showAddToCart'            => array( 'type' => 'boolean', 'default' => false ),
+			'addToCartText'            => array( 'type' => 'string',  'default' => 'Add to Cart' ),
+			'addToCartBgColor'         => array( 'type' => 'string',  'default' => '#0073aa' ),
+			'addToCartTextColor'       => array( 'type' => 'string',  'default' => '#ffffff' ),
+			'addToCartHoverBgColor'    => array( 'type' => 'string',  'default' => '#005a87' ),
+			'addToCartHoverTextColor'  => array( 'type' => 'string',  'default' => '#ffffff' ),
+			'addToCartBorderColor'     => array( 'type' => 'string',  'default' => '#0073aa' ),
+			'addToCartIcon'            => array( 'type' => 'string',  'default' => 'dashicons-cart' ),
+			'addToCartIconPosition'    => array( 'type' => 'string',  'default' => 'left' ),
+			'addToCartFullWidth'       => array( 'type' => 'boolean', 'default' => false ),
+
+			// Button Layout
+			'buttonsLayout'            => array( 'type' => 'string',  'default' => 'stacked' ),
+			'buttonsOrder'             => array( 'type' => 'string',  'default' => 'cart-first' ),
+			'buttonsGap'               => array( 'type' => 'number',  'default' => 10 ),
+
+			// View All Button
+			'viewAllFontSize'          => array( 'type' => 'number',  'default' => 14 ),
+			'showViewAll'              => array( 'type' => 'boolean', 'default' => false ),
+			'viewAllText'              => array( 'type' => 'string',  'default' => 'View All' ),
+			'viewAllUrl'               => array( 'type' => 'string',  'default' => '' ),
+			'viewAllBgColor'           => array( 'type' => 'string',  'default' => '#333333' ),
+			'viewAllTextColor'         => array( 'type' => 'string',  'default' => '#ffffff' ),
+			'viewAllHoverBgColor'      => array( 'type' => 'string',  'default' => '#000000' ),
+			'viewAllHoverTextColor'    => array( 'type' => 'string',  'default' => '#ffffff' ),
+			'viewAllBorderColor'       => array( 'type' => 'string',  'default' => '#333333' ),
+		);
+	}
+
+	/**
+	 * Render the block on the frontend
+	 *
+	 * @param array $attributes Block attributes.
+	 * @return string HTML output.
+	 */
+	public function render_block( $attributes ) {
 		if ( ! class_exists( 'WooCommerce' ) ) {
-			return '<div class="pcsbb-notice" style="padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107; margin: 20px 0;"><p><strong>' .
-				   esc_html__( 'Product Carousel Slider Biddut Block:', 'product-carousel-slider-biddut-block' ) . '</strong> ' .
-				   esc_html__( 'This block requires WooCommerce to be installed and activated.', 'product-carousel-slider-biddut-block' ) . ' ' .
-				   '<a href="' . esc_url( admin_url( 'plugin-install.php?s=woocommerce&tab=search&type=term' ) ) . '">' .
-				   esc_html__( 'Install WooCommerce', 'product-carousel-slider-biddut-block' ) . '</a></p></div>';
+			return '<p class="pcsbb-no-products">' . esc_html__( 'WooCommerce is required.', 'product-carousel-slider-biddut-block' ) . '</p>';
 		}
 
-		// Set defaults with gallery as default variant.
-		$attributes = wp_parse_args(
-			$attributes,
-			array(
-				'showHeader'               => false,
-				'sectionTitle'             => '',
-				'sectionSubtitle'          => '',
-				'sectionTitleFontSize'     => 32,
-				'sectionSubtitleFontSize'  => 24,
-				'productTitleFontSize'     => 16,
-				'productPriceFontSize'     => 18,
-				'sectionTitleColor'        => '#333',
-				'sectionSubtitleColor'     => '#666',
-				'productTitleColor'        => '#333',
-				'productTitleHoverColor'   => '#000',
-				'priceColor'               => '#333',
-				'priceHoverColor'          => '#e74c3c',
-				'navColor'                 => '#333',
-				'navHoverColor'            => '#ffffff',
-				'navBgColor'               => '#ffffff',
-				'navBgHoverColor'          => '#333',
-				'variant'                  => 'gallery',
-				'columnsDesktop'           => 4,
-				'columnsTablet'            => 3,
-				'columnsMobile'            => 2,
-				'columnsPhone'             => 1,
-				'imageHeightMode'          => 'natural',
-				'autoplay'                 => false,
-				'autoplayDelay'            => 5000,
-				'loop'                     => true,
-				'transitionSpeed'          => 500,
-				'disableMobileSlider'      => false,
-				'showNavigation'           => true,
-				'navigationStyle'          => 'arrows',
-				'prevArrowIcon'            => 'dashicons-arrow-left-alt2',
-				'nextArrowIcon'            => 'dashicons-arrow-right-alt2',
-				'hoverEffect'              => 'zoom',
-				'showImageDots'            => false,
-				'showGalleryOnHover'       => true,
-				'categories'               => array(),
-				'limit'                    => 12,
-				'orderby'                  => 'date',
-				'order'                    => 'DESC',
-				'showTitle'                => true,
-				'showPrice'                => true,
-				'showRating'               => false,
-				'showSaleLabel'            => true,
-				'saleLabelText'            => 'SALE',
-				'saleLabelPosition'        => 'top-right',
-				'saleBadgeBgColor'         => '#e74c3c',
-				'saleBadgeTextColor'       => '#ffffff',
-				'showOutOfStockLabel'      => false,
-				'outOfStockLabelText'      => 'Sold Out',
-				'outOfStockLabelPosition'  => 'top-right',
-				'outOfStockBgColor'        => '#555555',
-				'outOfStockTextColor'      => '#ffffff',
-				'showProductLink'          => false,
-				'productLinkBgColor'       => '#333333',
-				'productLinkTextColor'     => '#ffffff',
-				'productLinkHoverBgColor'  => '#000000',
-				'productLinkHoverTextColor' => '#ffffff',
-				'productLinkBorderColor'   => '#333333',
-				'productLinkIcon'          => 'dashicons-external',
-				'productLinkIconPosition'  => 'right',
-				'showAddToCart'            => false,
-				'addToCartText'            => __( 'Add to Cart', 'product-carousel-slider-biddut-block' ),
-				'addToCartBgColor'         => '#0073aa',
-				'addToCartTextColor'       => '#ffffff',
-				'addToCartHoverBgColor'    => '#005a87',
-				'addToCartHoverTextColor'  => '#ffffff',
-				'addToCartBorderColor'     => '#0073aa',
-				'addToCartIcon'            => 'dashicons-cart',
-				'addToCartIconPosition'    => 'left',
-				'buttonsLayout'            => 'stacked',
-				'buttonsOrder'             => 'cart-first',
-				'buttonsGap'               => 10,
-				'showViewAll'              => false,
-				'viewAllText'              => __( 'View All', 'product-carousel-slider-biddut-block' ),
-				'viewAllUrl'               => '',
-				'viewAllFontSize'          => 14,
-				'viewAllBgColor'           => '#333333',
-				'viewAllTextColor'         => '#ffffff',
-				'viewAllHoverBgColor'      => '#000000',
-				'viewAllHoverTextColor'    => '#ffffff',
-				'viewAllBorderColor'       => '#333333',
-				'addToCartFullWidth'       => false,
-				'productLinkFullWidth'     => false,
-			)
-		);
+		$a = wp_parse_args( $attributes, $this->get_default_attributes() );
 
-		// Build query args.
-		$args = array(
-			'post_type'      => 'product',
-			'posts_per_page' => intval( $attributes['limit'] ),
-			'post_status'    => 'publish',
-		);
+		// Generate unique block ID for scoped CSS
+		$block_id = 'pcsbb-block-' . wp_unique_id();
 
-		// Category filter — supports multiple categories via tax_query.
-		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-		if ( ! empty( $attributes['categories'] ) && is_array( $attributes['categories'] ) ) {
-			$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				array(
-					'taxonomy' => 'product_cat',
-					'field'    => 'slug',
-					'terms'    => array_map( 'sanitize_text_field', $attributes['categories'] ),
-					'operator' => 'IN',
-				),
-			);
+		// Get products
+		$products = $this->get_products( $a );
+
+		if ( empty( $products ) ) {
+			return '<p class="pcsbb-no-products">' . esc_html__( 'No products found.', 'product-carousel-slider-biddut-block' ) . '</p>';
 		}
 
-		// Order by — meta_key is required for price/popularity/rating sorting.
-		switch ( $attributes['orderby'] ) {
-			case 'price':
-				$args['meta_key'] = '_price'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$args['orderby']  = 'meta_value_num';
-				break;
-			case 'popularity':
-				$args['meta_key'] = 'total_sales'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$args['orderby']  = 'meta_value_num';
-				break;
-			case 'rating':
-				$args['meta_key'] = '_wc_average_rating'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$args['orderby']  = 'meta_value_num';
-				break;
-			case 'title':
-				$args['orderby'] = 'title';
-				break;
-			case 'rand':
-				$args['orderby'] = 'rand';
-				break;
-			case 'date':
-			default:
-				$args['orderby'] = 'date';
-				break;
+		// Scoped CSS — deferred to wp_footer to avoid two pitfalls:
+		// 1. wp_add_inline_style() silently drops CSS called after wp_head() printed the handle.
+		// 2. Inline <style> tags in render_callback output get stripped by WordPress block
+		//    content sanitization (wp_kses variants used in do_blocks pipeline).
+		// wp_footer fires after all content, so the styles always reach the browser.
+		$scoped_css = $this->build_scoped_css( $block_id, $a );
+		if ( $scoped_css ) {
+			$safe_id  = esc_attr( $block_id );
+			// wp_strip_all_tags is the correct escaping function for content inside a <style> tag.
+			// The CSS is already built exclusively from intval() and esc_attr() values,
+			// but PHPCS requires an explicit escaping call at the output point.
+			$safe_css = wp_strip_all_tags( $scoped_css );
+			add_action( 'wp_footer', static function() use ( $safe_id, $safe_css ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $safe_id is esc_attr(); $safe_css is wp_strip_all_tags()
+				echo '<style id="' . $safe_id . '-css">' . $safe_css . '</style>' . "\n";
+			} );
 		}
-
-		$args['order'] = in_array( strtoupper( $attributes['order'] ), array( 'ASC', 'DESC' ), true )
-			? strtoupper( $attributes['order'] )
-			: 'DESC';
-
-		$query = new WP_Query( $args );
-
-		$carousel_id = 'pcsbb-carousel-' . wp_rand( 1000, 9999 );
 
 		ob_start();
-		?>
-		<div class="pcsbb-main-wrapper"
-			 data-variant="<?php echo esc_attr( $attributes['variant'] ); ?>"
-			 style="
-			 	--pcsbb-section-title-color: <?php echo esc_attr( $attributes['sectionTitleColor'] ); ?>;
-			 	--pcsbb-section-subtitle-color: <?php echo esc_attr( $attributes['sectionSubtitleColor'] ); ?>;
-			 	--pcsbb-product-title-color: <?php echo esc_attr( $attributes['productTitleColor'] ); ?>;
-			 	--pcsbb-product-title-hover-color: <?php echo esc_attr( $attributes['productTitleHoverColor'] ); ?>;
-			 	--pcsbb-price-color: <?php echo esc_attr( $attributes['priceColor'] ); ?>;
-			 	--pcsbb-price-hover-color: <?php echo esc_attr( $attributes['priceHoverColor'] ); ?>;
-			 	--pcsbb-nav-color: <?php echo esc_attr( $attributes['navColor'] ); ?>;
-			 	--pcsbb-nav-hover-color: <?php echo esc_attr( $attributes['navHoverColor'] ); ?>;
-			 	--pcsbb-nav-bg-color: <?php echo esc_attr( $attributes['navBgColor'] ); ?>;
-			 	--pcsbb-nav-bg-hover-color: <?php echo esc_attr( $attributes['navBgHoverColor'] ); ?>;
-			 	--pcsbb-product-link-bg: <?php echo esc_attr( $attributes['productLinkBgColor'] ); ?>;
-			 	--pcsbb-product-link-text: <?php echo esc_attr( $attributes['productLinkTextColor'] ); ?>;
-			 	--pcsbb-product-link-hover-bg: <?php echo esc_attr( $attributes['productLinkHoverBgColor'] ); ?>;
-			 	--pcsbb-product-link-hover-text: <?php echo esc_attr( $attributes['productLinkHoverTextColor'] ); ?>;
-			 	--pcsbb-product-link-border: <?php echo esc_attr( $attributes['productLinkBorderColor'] ); ?>;
-			 	--pcsbb-add-to-cart-bg: <?php echo esc_attr( $attributes['addToCartBgColor'] ); ?>;
-			 	--pcsbb-add-to-cart-text: <?php echo esc_attr( $attributes['addToCartTextColor'] ); ?>;
-			 	--pcsbb-add-to-cart-hover-bg: <?php echo esc_attr( $attributes['addToCartHoverBgColor'] ); ?>;
-			 	--pcsbb-add-to-cart-hover-text: <?php echo esc_attr( $attributes['addToCartHoverTextColor'] ); ?>;
-			 	--pcsbb-add-to-cart-border: <?php echo esc_attr( $attributes['addToCartBorderColor'] ); ?>;
-			 	--pcsbb-view-all-bg: <?php echo esc_attr( $attributes['viewAllBgColor'] ); ?>;
-			 	--pcsbb-view-all-text: <?php echo esc_attr( $attributes['viewAllTextColor'] ); ?>;
-			 	--pcsbb-view-all-hover-bg: <?php echo esc_attr( $attributes['viewAllHoverBgColor'] ); ?>;
-			 	--pcsbb-view-all-hover-text: <?php echo esc_attr( $attributes['viewAllHoverTextColor'] ); ?>;
-			 	--pcsbb-view-all-border: <?php echo esc_attr( $attributes['viewAllBorderColor'] ); ?>;
-			 	--pcsbb-view-all-font-size: <?php echo esc_attr( $attributes['viewAllFontSize'] ); ?>px;
-			 ">
 
-			<?php if ( ! empty( $attributes['showHeader'] ) && ( ! empty( $attributes['sectionTitle'] ) || ! empty( $attributes['sectionSubtitle'] ) ) ) : ?>
-				<div class="pcsbb-header">
-					<?php if ( ! empty( $attributes['sectionTitle'] ) ) : ?>
-						<h2 class="pcsbb-section-title" style="font-size: <?php echo esc_attr( $attributes['sectionTitleFontSize'] ); ?>px;"><?php echo esc_html( $attributes['sectionTitle'] ); ?></h2>
-					<?php endif; ?>
+		// CSS custom properties for colors (scoped to block ID)
+		$css_vars = $this->get_css_vars( $a );
 
-					<?php if ( ! empty( $attributes['sectionSubtitle'] ) ) : ?>
-						<h3 class="pcsbb-section-subtitle" style="font-size: <?php echo esc_attr( $attributes['sectionSubtitleFontSize'] ); ?>px;"><?php echo esc_html( $attributes['sectionSubtitle'] ); ?></h3>
-					<?php endif; ?>
-				</div>
-			<?php endif; ?>
+		// Main wrapper
+		printf(
+			'<div id="%s" class="pcsbb-main-wrapper wp-block-pcsbb-carousel" data-variant="%s" style="%s">',
+			esc_attr( $block_id ),
+			esc_attr( $a['variant'] ),
+			esc_attr( $css_vars )
+		);
 
-			<div class="pcsbb-carousel-wrapper"
-				id="<?php echo esc_attr( $carousel_id ); ?>"
-				data-variant="<?php echo esc_attr( $attributes['variant'] ); ?>"
-				data-columns-desktop="<?php echo esc_attr( $attributes['columnsDesktop'] ); ?>"
-				data-columns-tablet="<?php echo esc_attr( $attributes['columnsTablet'] ); ?>"
-				data-columns-mobile="<?php echo esc_attr( $attributes['columnsMobile'] ); ?>"
-				data-columns-phone="<?php echo esc_attr( $attributes['columnsPhone'] ); ?>"
-				data-image-height-mode="<?php echo esc_attr( $attributes['imageHeightMode'] ); ?>"
-				data-autoplay="<?php echo $attributes['autoplay'] ? 'true' : 'false'; ?>"
-				data-autoplay-delay="<?php echo esc_attr( $attributes['autoplayDelay'] ); ?>"
-				data-loop="<?php echo $attributes['loop'] ? 'true' : 'false'; ?>"
-				data-transition-speed="<?php echo esc_attr( $attributes['transitionSpeed'] ); ?>"
-				data-disable-mobile-slider="<?php echo $attributes['disableMobileSlider'] ? 'true' : 'false'; ?>"
-				data-show-navigation="<?php echo $attributes['showNavigation'] ? 'true' : 'false'; ?>"
-				data-navigation-style="<?php echo esc_attr( $attributes['navigationStyle'] ); ?>"
-				data-prev-arrow-icon="<?php echo esc_attr( $attributes['prevArrowIcon'] ); ?>"
-				data-next-arrow-icon="<?php echo esc_attr( $attributes['nextArrowIcon'] ); ?>"
-				data-hover-effect="<?php echo esc_attr( $attributes['hoverEffect'] ); ?>"
-				data-show-image-dots="<?php echo $attributes['showImageDots'] ? 'true' : 'false'; ?>"
-				data-show-gallery-on-hover="<?php echo $attributes['showGalleryOnHover'] ? 'true' : 'false'; ?>"
-				data-product-title-font-size="<?php echo esc_attr( $attributes['productTitleFontSize'] ); ?>"
-				data-product-price-font-size="<?php echo esc_attr( $attributes['productPriceFontSize'] ); ?>">
+		// Header
+		if ( ! empty( $a['showHeader'] ) ) {
+			$this->render_header( $a );
+		}
 
-				<?php
-				if ( $query->have_posts() ) {
-					while ( $query->have_posts() ) {
-						$query->the_post();
-						$product = wc_get_product( get_the_ID() );
-						if ( $product ) {
-							$this->render_product_item( $product, $attributes );
-						}
-					}
-					wp_reset_postdata();
-				} else {
-					echo '<div class="pcsbb-no-products">' . esc_html__( 'No products found.', 'product-carousel-slider-biddut-block' ) . '</div>';
-				}
-				?>
-			</div>
+		// Carousel wrapper — all data-* attrs read by public.js
+		printf(
+			'<div class="pcsbb-carousel-wrapper" 
+				data-variant="%s"
+				data-columns-desktop="%d"
+				data-columns-tablet="%d"
+				data-columns-mobile="%d"
+				data-columns-phone="%d"
+				data-image-height-mode="%s"
+				data-autoplay="%s"
+				data-autoplay-delay="%d"
+				data-loop="%s"
+				data-transition-speed="%d"
+				data-show-navigation="%s"
+				data-navigation-style="%s"
+				data-prev-arrow-icon="%s"
+				data-next-arrow-icon="%s"
+				data-hover-effect="%s"
+				data-show-image-dots="%s"
+				data-show-gallery-on-hover="%s"
+				data-disable-mobile-slider="%s"
+				data-mobile-product-width="%s"
+				data-slider-fit-mode="%s"
+			>',
+			esc_attr( $a['variant'] ),
+			intval( $a['columnsDesktop'] ),
+			intval( $a['columnsTablet'] ),
+			intval( $a['columnsMobile'] ),
+			intval( $a['columnsPhone'] ),
+			esc_attr( $a['imageHeightMode'] ),
+			$a['autoplay'] ? 'true' : 'false',
+			intval( $a['autoplayDelay'] ),
+			$a['loop'] ? 'true' : 'false',
+			intval( $a['transitionSpeed'] ),
+			$a['showNavigation'] ? 'true' : 'false',
+			esc_attr( $a['navigationStyle'] ),
+			esc_attr( $a['prevArrowIcon'] ),
+			esc_attr( $a['nextArrowIcon'] ),
+			esc_attr( $a['hoverEffect'] ),
+			$a['showImageDots'] ? 'true' : 'false',
+			$a['showGalleryOnHover'] ? 'true' : 'false',
+			$a['disableMobileSlider'] ? 'true' : 'false',
+			esc_attr( $a['mobileProductWidth'] ),
+			esc_attr( $a['sliderFitMode'] )
+		);
 
-			<?php if ( ! empty( $attributes['showViewAll'] ) ) : ?>
-				<div class="pcsbb-view-all-wrapper">
-					<?php
-					$view_all_href  = ! empty( $attributes['viewAllUrl'] ) ? esc_url( $attributes['viewAllUrl'] ) : '#';
-					$view_all_label = ! empty( $attributes['viewAllText'] ) ? $attributes['viewAllText'] : __( 'View All', 'product-carousel-slider-biddut-block' );
-					?>
-					<a href="<?php echo $view_all_href; ?>" class="pcsbb-view-all-button">
-						<?php echo esc_html( $view_all_label ); ?>
-					</a>
-				</div>
-			<?php endif; ?>
-		</div>
-		<?php
+		// Product items
+		foreach ( $products as $product_id ) {
+			$product = wc_get_product( $product_id );
+			if ( $product ) {
+				$this->render_product_item( $product, $a );
+			}
+		}
+
+		echo '</div>'; // .pcsbb-carousel-wrapper
+
+		// View All button
+		if ( ! empty( $a['showViewAll'] ) ) {
+			$this->render_view_all( $a );
+		}
+
+		echo '</div>'; // .pcsbb-main-wrapper
+
 		return ob_get_clean();
 	}
 
 	/**
-	 * Render a single product item.
-	 *
-	 * @param WC_Product $product    WooCommerce product object.
-	 * @param array      $attributes Block attributes.
+	 * Output scoped <style> block for this block instance.
+	 * Handles: responsive padding/margin (Task 2), arrow sizes (Task 4), mobile width (Task 1).
 	 */
-	private function render_product_item( $product, $attributes ) {
-		// Collect product images.
-		$images     = array();
-		$main_image = get_the_post_thumbnail_url( $product->get_id(), 'full' );
+	/**
+	 * Build scoped CSS string for this block instance.
+	 * Returns a plain CSS string — output as a <style> tag inside the block HTML.
+	 * Handles: responsive padding/margin (Task 2), arrow sizes (Task 4), mobile width (Task 1).
+	 *
+	 * @param string $block_id Unique block HTML ID.
+	 * @param array  $a        Block attributes.
+	 * @return string CSS string (no <style> tags).
+	 */
+	private function build_scoped_css( $block_id, $a ) {
+		$id = '#' . $block_id; // already sanitized via wp_unique_id()
 
-		if ( $main_image ) {
-			$images[] = $main_image;
-		} else {
-			$images[] = wc_placeholder_img_src( 'full' );
+		$pad_x_d = intval( $a['outerPadXDesktop'] );
+		$pad_y_d = intval( $a['outerPadYDesktop'] );
+		$pad_x_t = intval( $a['outerPadXTablet'] );
+		$pad_y_t = intval( $a['outerPadYTablet'] );
+		$pad_x_m = intval( $a['outerPadXMobile'] );
+		$pad_y_m = intval( $a['outerPadYMobile'] );
+		$pad_x_p = intval( $a['outerPadXPhone'] );
+		$pad_y_p = intval( $a['outerPadYPhone'] );
+
+		$mar_x_d = intval( $a['outerMarXDesktop'] );
+		$mar_y_d = intval( $a['outerMarYDesktop'] );
+		$mar_x_t = intval( $a['outerMarXTablet'] );
+		$mar_y_t = intval( $a['outerMarYTablet'] );
+		$mar_x_m = intval( $a['outerMarXMobile'] );
+		$mar_y_m = intval( $a['outerMarYMobile'] );
+		$mar_x_p = intval( $a['outerMarXPhone'] );
+		$mar_y_p = intval( $a['outerMarYPhone'] );
+
+		$arr_d = intval( $a['navArrowSizeDesktop'] );
+		$arr_t = intval( $a['navArrowSizeTablet'] );
+		$arr_m = intval( $a['navArrowSizeMobile'] );
+		$arr_p = intval( $a['navArrowSizePhone'] );
+		$ico_d = intval( $a['navIconSizeDesktop'] );
+		$ico_t = intval( $a['navIconSizeTablet'] );
+		$ico_m = intval( $a['navIconSizeMobile'] );
+		$ico_p = intval( $a['navIconSizePhone'] );
+
+
+
+		$css = '';
+
+		// Desktop base.
+		// Padding: straightforward, ID specificity beats class rule.
+		// Margin-Y: top/bottom margin works normally on width:100% elements.
+		// Margin-X: margin-left/right on a width:100% element causes overflow (total = 100% + 2X).
+		//   Instead, use width:calc(100% - 2*X) + margin:auto to shrink the element inward
+		//   from both sides symmetrically — correct visual result without overflow.
+		$mar_x_d_css = $mar_x_d > 0
+			? "width:calc(100% - " . ( $mar_x_d * 2 ) . "px);margin-left:auto;margin-right:auto;"
+			: "";
+		$css .= "{$id}{" .
+			"padding:{$pad_y_d}px {$pad_x_d}px;" .
+			"margin-top:{$mar_y_d}px;" .
+			"margin-bottom:{$mar_y_d}px;" .
+			$mar_x_d_css .
+		"}";
+		$css .= "{$id} .pcsbb-nav-arrow{width:{$arr_d}px;height:{$arr_d}px;min-width:{$arr_d}px;min-height:{$arr_d}px;max-width:{$arr_d}px;max-height:{$arr_d}px;}";
+		$css .= "{$id} .pcsbb-nav-arrow .dashicons{font-size:{$ico_d}px;width:{$ico_d}px!important;height:{$ico_d}px!important;line-height:{$ico_d}px!important;}";
+
+		// Tablet
+		$mar_x_t_css = $mar_x_t > 0
+			? "width:calc(100% - " . ( $mar_x_t * 2 ) . "px);margin-left:auto;margin-right:auto;"
+			: "";
+		$css .= "@media(max-width:1279px){" .
+			"{$id}{" .
+				"padding:{$pad_y_t}px {$pad_x_t}px;" .
+				"margin-top:{$mar_y_t}px;" .
+				"margin-bottom:{$mar_y_t}px;" .
+				$mar_x_t_css .
+			"}" .
+		"}";
+		$css .= "@media(max-width:1279px){{$id} .pcsbb-nav-arrow{width:{$arr_t}px;height:{$arr_t}px;min-width:{$arr_t}px;min-height:{$arr_t}px;max-width:{$arr_t}px;max-height:{$arr_t}px;}}";
+		$css .= "@media(max-width:1279px){{$id} .pcsbb-nav-arrow .dashicons{font-size:{$ico_t}px;width:{$ico_t}px!important;height:{$ico_t}px!important;line-height:{$ico_t}px!important;}}";
+
+		// Mobile
+		$mar_x_m_css = $mar_x_m > 0
+			? "width:calc(100% - " . ( $mar_x_m * 2 ) . "px);margin-left:auto;margin-right:auto;"
+			: "";
+		$css .= "@media(max-width:767px){" .
+			"{$id}{" .
+				"padding:{$pad_y_m}px {$pad_x_m}px;" .
+				"margin-top:{$mar_y_m}px;" .
+				"margin-bottom:{$mar_y_m}px;" .
+				$mar_x_m_css .
+			"}" .
+		"}";
+		$css .= "@media(max-width:767px){{$id} .pcsbb-nav-arrow{width:{$arr_m}px;height:{$arr_m}px;min-width:{$arr_m}px;min-height:{$arr_m}px;max-width:{$arr_m}px;max-height:{$arr_m}px;}}";
+		$css .= "@media(max-width:767px){{$id} .pcsbb-nav-arrow .dashicons{font-size:{$ico_m}px;width:{$ico_m}px!important;height:{$ico_m}px!important;line-height:{$ico_m}px!important;}}";
+
+		// Phone
+		$mar_x_p_css = $mar_x_p > 0
+			? "width:calc(100% - " . ( $mar_x_p * 2 ) . "px);margin-left:auto;margin-right:auto;"
+			: "";
+		$css .= "@media(max-width:479px){" .
+			"{$id}{" .
+				"padding:{$pad_y_p}px {$pad_x_p}px;" .
+				"margin-top:{$mar_y_p}px;" .
+				"margin-bottom:{$mar_y_p}px;" .
+				$mar_x_p_css .
+			"}" .
+		"}";
+		$css .= "@media(max-width:479px){{$id} .pcsbb-nav-arrow{width:{$arr_p}px;height:{$arr_p}px;min-width:{$arr_p}px;min-height:{$arr_p}px;max-width:{$arr_p}px;max-height:{$arr_p}px;}}";
+		$css .= "@media(max-width:479px){{$id} .pcsbb-nav-arrow .dashicons{font-size:{$ico_p}px;width:{$ico_p}px!important;height:{$ico_p}px!important;line-height:{$ico_p}px!important;}}";
+
+		// Mobile vertical layout centering — only applied when mobile slider is disabled.
+		// The wrapper reset (width:100%, margin:0) removes the intentional breathing-room
+		// negative margin (-6px each side). In carousel/slider mode that breathing room is
+		// required so card shadows and borders aren't hard-clipped by overflow:hidden.
+		// Resetting it in slider mode makes the wrapper wider than its parent → cards overflow.
+		// When disableMobileSlider=true the JS switches to vertical stack mode (no overflow:hidden
+		// needed) so the reset is safe to apply there only.
+		if ( ! empty( $a['disableMobileSlider'] ) ) {
+			$css .= "@media(max-width:767px){" .
+				"{$id} .pcsbb-carousel-wrapper{width:100%!important;margin-left:0!important;margin-right:0!important;}" .
+				"{$id} .pcsbb-mobile-vertical-container{align-items:center;width:100%;}" .
+				"{$id} .pcsbb-mobile-vertical-container .pcsbb-product-item{" .
+					"width:100%!important;" .
+					"max-width:420px!important;" .
+					"margin-left:auto!important;" .
+					"margin-right:auto!important;" .
+				"}" .
+			"}";
 		}
 
-		// Append gallery images.
-		$gallery_ids = $product->get_gallery_image_ids();
-		foreach ( $gallery_ids as $gallery_id ) {
-			$gallery_image = wp_get_attachment_url( $gallery_id );
-			if ( $gallery_image ) {
-				$images[] = $gallery_image;
-			}
-		}
-
-		$image_url     = $images[0];
-		$gallery_image = isset( $images[1] ) ? $images[1] : '';
-
-		// Determine stock status.
-		$is_in_stock = (bool) $product->is_in_stock();
-
-		// Robust sale detection.
-		// 1. Try WooCommerce native is_on_sale() — handles scheduled sales & all product types.
-		$is_on_sale = (bool) $product->is_on_sale();
-
-		// 2. Fallback for simple products: compare prices directly.
-		//    Handles edge cases where WC cache may not reflect current state.
-		//    Only flags as sale when BOTH prices exist and sale < regular.
-		if ( ! $is_on_sale ) {
-			$regular_price = (float) $product->get_regular_price();
-			$sale_price    = (string) $product->get_sale_price(); // keep as string to detect empty vs zero
-			if ( $regular_price > 0 && '' !== $sale_price && (float) $sale_price < $regular_price ) {
-				$is_on_sale = true;
-			}
-		}
-
-		// 3. For variable products: check if ANY child variation is on sale.
-		if ( ! $is_on_sale && $product->is_type( 'variable' ) ) {
-			foreach ( $product->get_children() as $child_id ) {
-				$variation = wc_get_product( $child_id );
-				if ( ! $variation ) {
-					continue;
-				}
-				if ( $variation->is_on_sale() ) {
-					$is_on_sale = true;
-					break;
-				}
-				$var_regular = (float) $variation->get_regular_price();
-				$var_sale    = (string) $variation->get_sale_price();
-				if ( $var_regular > 0 && '' !== $var_sale && (float) $var_sale < $var_regular ) {
-					$is_on_sale = true;
-					break;
-				}
-			}
-		}
-		?>
-		<div class="pcsbb-product-item"
-			 data-variant="<?php echo esc_attr( $attributes['variant'] ); ?>"
-			 data-product-id="<?php echo esc_attr( $product->get_id() ); ?>">
-
-			<div class="pcsbb-product-image-wrapper">
-
-				<?php /* Product image link */ ?>
-				<a href="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>" class="pcsbb-product-image-link" tabindex="0" aria-label="<?php echo esc_attr( $product->get_name() ); ?>">
-					<img src="<?php echo esc_url( $image_url ); ?>"
-						 alt="<?php echo esc_attr( $product->get_name() ); ?>"
-						 class="pcsbb-product-image pcsbb-main-image"
-						 loading="lazy">
-				</a>
-
-				<?php if ( ! empty( $attributes['showGalleryOnHover'] ) && ! empty( $gallery_image ) ) : ?>
-					<img src="<?php echo esc_url( $gallery_image ); ?>"
-						 alt="<?php echo esc_attr( $product->get_name() ); ?>"
-						 class="pcsbb-product-image pcsbb-gallery-image"
-						 loading="lazy">
-				<?php endif; ?>
-
-				<?php /* Sale badge — always rendered last so it sits on top */ ?>
-				<?php if ( true === (bool) $attributes['showSaleLabel'] && $is_on_sale ) : ?>
-					<span class="pcsbb-sale-badge pcsbb-badge-<?php echo esc_attr( $attributes['saleLabelPosition'] ); ?>"
-					      style="background-color:<?php echo esc_attr( $attributes['saleBadgeBgColor'] ); ?>;color:<?php echo esc_attr( $attributes['saleBadgeTextColor'] ); ?>;">
-						<?php echo esc_html( ! empty( $attributes['saleLabelText'] ) ? $attributes['saleLabelText'] : 'SALE' ); ?>
-					</span>
-				<?php endif; ?>
-
-				<?php /* Out-of-stock badge */ ?>
-				<?php if ( true === (bool) $attributes['showOutOfStockLabel'] && ! $is_in_stock ) : ?>
-					<span class="pcsbb-sold-out-badge pcsbb-badge-<?php echo esc_attr( $attributes['outOfStockLabelPosition'] ); ?>"
-					      style="background-color:<?php echo esc_attr( $attributes['outOfStockBgColor'] ); ?>;color:<?php echo esc_attr( $attributes['outOfStockTextColor'] ); ?>;">
-						<?php echo esc_html( ! empty( $attributes['outOfStockLabelText'] ) ? $attributes['outOfStockLabelText'] : 'Sold Out' ); ?>
-					</span>
-				<?php endif; ?>
-
-				<?php if ( ! empty( $attributes['showImageDots'] ) && count( $images ) > 1 ) : ?>
-					<div class="pcsbb-image-dots">
-						<?php foreach ( $images as $index => $image ) : ?>
-							<span class="pcsbb-dot <?php echo 0 === $index ? 'active' : ''; ?>"
-								  data-image="<?php echo esc_url( $image ); ?>"
-								  data-index="<?php echo esc_attr( $index ); ?>"
-								  role="button"
-								  aria-label="<?php
-								  	// translators: %d is the image number in the product gallery.
-								  	echo esc_attr( sprintf( __( 'View image %d', 'product-carousel-slider-biddut-block' ), $index + 1 ) );
-								  ?>"></span>
-						<?php endforeach; ?>
-					</div>
-				<?php endif; ?>
-
-			</div><!-- .pcsbb-product-image-wrapper -->
-
-			<div class="pcsbb-product-info">
-				<?php if ( ! empty( $attributes['showTitle'] ) ) : ?>
-					<h3 class="pcsbb-product-title" style="font-size: <?php echo esc_attr( $attributes['productTitleFontSize'] ); ?>px;">
-						<a href="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>">
-							<?php echo esc_html( $product->get_name() ); ?>
-						</a>
-					</h3>
-				<?php endif; ?>
-
-				<?php if ( ! empty( $attributes['showRating'] ) && $product->get_average_rating() > 0 ) : ?>
-					<div class="pcsbb-product-rating">
-						<?php echo wc_get_rating_html( $product->get_average_rating() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</div>
-				<?php endif; ?>
-
-				<?php if ( ! empty( $attributes['showPrice'] ) ) : ?>
-					<div class="pcsbb-product-price" style="font-size: <?php echo esc_attr( $attributes['productPriceFontSize'] ); ?>px;">
-						<?php echo wp_kses_post( $product->get_price_html() ); ?>
-					</div>
-				<?php endif; ?>
-
-				<?php $this->render_action_buttons( $product, $attributes ); ?>
-			</div><!-- .pcsbb-product-info -->
-		</div><!-- .pcsbb-product-item -->
-		<?php
+		return $css;
 	}
 
 	/**
-	 * Render action buttons (Add to Cart and/or View Product).
-	 *
-	 * @param WC_Product $product    WooCommerce product object.
-	 * @param array      $attributes Block attributes.
+	 * Build CSS custom property string for color variables
 	 */
-	private function render_action_buttons( $product, $attributes ) {
-		$show_cart = ! empty( $attributes['showAddToCart'] );
-		$show_link = ! empty( $attributes['showProductLink'] );
+	private function get_css_vars( $a ) {
+		return implode( ';', array(
+			'--pcsbb-product-title-color:'       . esc_attr( $a['productTitleColor'] ),
+			'--pcsbb-product-title-hover-color:' . esc_attr( $a['productTitleHoverColor'] ),
+			'--pcsbb-price-color:'               . esc_attr( $a['priceColor'] ),
+			'--pcsbb-price-hover-color:'         . esc_attr( $a['priceHoverColor'] ),
+			'--pcsbb-nav-color:'                 . esc_attr( $a['navColor'] ),
+			'--pcsbb-nav-hover-color:'           . esc_attr( $a['navHoverColor'] ),
+			'--pcsbb-nav-bg-color:'              . esc_attr( $a['navBgColor'] ),
+			'--pcsbb-nav-bg-hover-color:'        . esc_attr( $a['navBgHoverColor'] ),
+			'--pcsbb-section-title-color:'       . esc_attr( $a['sectionTitleColor'] ),
+			'--pcsbb-section-subtitle-color:'    . esc_attr( $a['sectionSubtitleColor'] ),
+			'--pcsbb-view-all-bg:'               . esc_attr( $a['viewAllBgColor'] ),
+			'--pcsbb-view-all-text:'             . esc_attr( $a['viewAllTextColor'] ),
+			'--pcsbb-view-all-hover-bg:'         . esc_attr( $a['viewAllHoverBgColor'] ),
+			'--pcsbb-view-all-hover-text:'       . esc_attr( $a['viewAllHoverTextColor'] ),
+			'--pcsbb-view-all-border:'           . esc_attr( $a['viewAllBorderColor'] ),
+			'--pcsbb-view-all-font-size:'        . intval( $a['viewAllFontSize'] ) . 'px',
+			'--pcsbb-product-link-bg:'           . esc_attr( $a['productLinkBgColor'] ),
+			'--pcsbb-product-link-text:'         . esc_attr( $a['productLinkTextColor'] ),
+			'--pcsbb-product-link-hover-bg:'     . esc_attr( $a['productLinkHoverBgColor'] ),
+			'--pcsbb-product-link-hover-text:'   . esc_attr( $a['productLinkHoverTextColor'] ),
+			'--pcsbb-product-link-border:'       . esc_attr( $a['productLinkBorderColor'] ),
+			'--pcsbb-add-to-cart-bg:'            . esc_attr( $a['addToCartBgColor'] ),
+			'--pcsbb-add-to-cart-text:'          . esc_attr( $a['addToCartTextColor'] ),
+			'--pcsbb-add-to-cart-hover-bg:'      . esc_attr( $a['addToCartHoverBgColor'] ),
+			'--pcsbb-add-to-cart-hover-text:'    . esc_attr( $a['addToCartHoverTextColor'] ),
+			'--pcsbb-add-to-cart-border:'        . esc_attr( $a['addToCartBorderColor'] ),
+		) ) . ';';
+	}
 
-		if ( ! $show_cart && ! $show_link ) {
-			return;
+	/**
+	 * Render the header (title & subtitle)
+	 */
+	private function render_header( $a ) {
+		echo '<div class="pcsbb-header">';
+		if ( ! empty( $a['sectionTitle'] ) ) {
+			printf(
+				'<h2 class="pcsbb-section-title" style="font-size:%dpx">%s</h2>',
+				intval( $a['sectionTitleFontSize'] ),
+				esc_html( $a['sectionTitle'] )
+			);
+		}
+		if ( ! empty( $a['sectionSubtitle'] ) ) {
+			printf(
+				'<p class="pcsbb-section-subtitle" style="font-size:%dpx">%s</p>',
+				intval( $a['sectionSubtitleFontSize'] ),
+				esc_html( $a['sectionSubtitle'] )
+			);
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Get products based on block attributes
+	 *
+	 * @return int[] Array of product IDs
+	 */
+	private function get_products( $a ) {
+		$args = array(
+			'status'   => 'publish',
+			'limit'    => intval( $a['limit'] ),
+			'orderby'  => sanitize_text_field( $a['orderby'] ),
+			'order'    => sanitize_text_field( $a['order'] ),
+			'return'   => 'ids',
+		);
+
+		if ( ! empty( $a['categories'] ) && is_array( $a['categories'] ) ) {
+			$args['category'] = array_map( 'sanitize_text_field', $a['categories'] );
 		}
 
-		// Determine layout class
-		$buttons_class = 'pcsbb-action-buttons';
-		if ( $show_cart && $show_link ) {
-			$layout        = ! empty( $attributes['buttonsLayout'] ) ? $attributes['buttonsLayout'] : 'stacked';
-			$buttons_class .= ' pcsbb-buttons-' . sanitize_html_class( $layout );
+		return wc_get_products( $args );
+	}
+
+	/**
+	 * Render a single product item
+	 */
+	private function render_product_item( $product, $a ) {
+		$product_id   = $product->get_id();
+		$product_url  = get_permalink( $product_id );
+		$product_name = $product->get_name();
+		$is_on_sale   = $product->is_on_sale();
+		$is_in_stock  = $product->is_in_stock();
+
+		// Use 'large' (uncropped) so natural mode shows real proportions.
+		// 'woocommerce_thumbnail' is square-cropped by default, which breaks natural aspect ratio.
+		// CSS object-fit handles cropping/sizing per mode (contain = natural, cover = uniform).
+		$img_size     = 'large';
+		$main_img_id  = $product->get_image_id();
+		$main_img_alt = $main_img_id
+			? get_post_meta( $main_img_id, '_wp_attachment_image_alt', true )
+			: $product_name;
+		if ( ! $main_img_alt ) {
+			$main_img_alt = $product_name;
 		}
 
-		$order      = ! empty( $attributes['buttonsOrder'] ) ? $attributes['buttonsOrder'] : 'cart-first';
-		$cart_first = ( 'cart-first' === $order );
-		$gap        = isset( $attributes['buttonsGap'] ) ? intval( $attributes['buttonsGap'] ) : 10;
-		?>
-		<div class="<?php echo esc_attr( $buttons_class ); ?>" style="gap: <?php echo esc_attr( $gap ); ?>px;">
-			<?php
-			if ( $cart_first ) {
-				if ( $show_cart ) {
-					$this->render_add_to_cart( $product, $attributes, $show_link );
+		// Gallery image (second in gallery)
+		$gallery_ids     = $product->get_gallery_image_ids();
+		$gallery_img_id  = ( ! empty( $gallery_ids ) && $a['showGalleryOnHover'] ) ? $gallery_ids[0] : 0;
+
+		echo '<div class="pcsbb-product-item">';
+
+		// Image wrapper
+		echo '<div class="pcsbb-product-image-wrapper">';
+
+		// Sale badge
+		if ( ! empty( $a['showSaleLabel'] ) && $is_on_sale ) {
+			$sale_pos = sanitize_html_class( $a['saleLabelPosition'] ?? 'top-right' );
+			printf(
+				'<span class="pcsbb-sale-badge pcsbb-badge-%s" style="background-color:%s;color:%s;">%s</span>',
+				esc_attr( $sale_pos ),
+				esc_attr( $a['saleBadgeBgColor'] ),
+				esc_attr( $a['saleBadgeTextColor'] ),
+				esc_html( $a['saleLabelText'] )
+			);
+		}
+
+		// Out of stock badge
+		if ( ! empty( $a['showOutOfStockLabel'] ) && ! $is_in_stock ) {
+			$oos_pos = sanitize_html_class( $a['outOfStockLabelPosition'] ?? 'top-right' );
+			printf(
+				'<span class="pcsbb-sold-out-badge pcsbb-badge-%s" style="background-color:%s;color:%s;">%s</span>',
+				esc_attr( $oos_pos ),
+				esc_attr( $a['outOfStockBgColor'] ),
+				esc_attr( $a['outOfStockTextColor'] ),
+				esc_html( $a['outOfStockLabelText'] )
+			);
+		}
+
+		// Product image link
+		printf( '<a href="%s" class="pcsbb-product-image-link" title="%s">',
+			esc_url( $product_url ),
+			esc_attr( $product_name )
+		);
+
+		// Main image — wp_get_attachment_image includes width/height attrs so browser
+		// can reserve correct intrinsic space before CSS is applied
+		if ( $main_img_id ) {
+			echo wp_get_attachment_image(
+				$main_img_id,
+				$img_size,
+				false,
+				array(
+					'class'   => 'pcsbb-product-image pcsbb-main-image',
+					'alt'     => esc_attr( $main_img_alt ),
+					'loading' => 'lazy',
+				)
+			);
+		} else {
+			// Fallback placeholder
+			printf(
+				'<img src="%s" alt="%s" class="pcsbb-product-image pcsbb-main-image" loading="lazy">',
+				esc_url( wc_placeholder_img_src( $img_size ) ),
+				esc_attr( $product_name )
+			);
+		}
+
+		// Gallery image (hover swap)
+		if ( $gallery_img_id ) {
+			echo wp_get_attachment_image(
+				$gallery_img_id,
+				$img_size,
+				false,
+				array(
+					'class'   => 'pcsbb-product-image pcsbb-gallery-image',
+					'alt'     => esc_attr( $product_name ),
+					'loading' => 'lazy',
+				)
+			);
+		} else {
+			// Empty src so CSS [src=""] rule hides it
+			echo '<img src="" alt="" class="pcsbb-product-image pcsbb-gallery-image">';
+		}
+
+		echo '</a>';
+
+		// Image dots (gallery navigation) — thumbnails are fine for dots (small)
+		if ( ! empty( $a['showImageDots'] ) && ! empty( $gallery_ids ) ) {
+			echo '<div class="pcsbb-image-dots">';
+			$all_images = array_merge( array( $main_img_id ), $gallery_ids );
+			foreach ( $all_images as $i => $img_id ) {
+				$dot_img = wp_get_attachment_image_url( $img_id, 'woocommerce_thumbnail' );
+				if ( $dot_img ) {
+					printf(
+						'<span class="pcsbb-dot %s" data-image="%s" title="%d"></span>',
+						0 === $i ? 'active' : '',
+						esc_url( $dot_img ),
+						absint( $i + 1 )
+					);
 				}
-				if ( $show_link ) {
-					$this->render_product_link( $product, $attributes, $show_cart );
-				}
+			}
+			echo '</div>';
+		}
+
+		echo '</div>'; // .pcsbb-product-image-wrapper
+
+		// Product info
+		echo '<div class="pcsbb-product-info">';
+
+		if ( ! empty( $a['showTitle'] ) ) {
+			printf(
+				'<h3 class="pcsbb-product-title" style="font-size:%dpx"><a href="%s">%s</a></h3>',
+				intval( $a['productTitleFontSize'] ),
+				esc_url( $product_url ),
+				esc_html( $product_name )
+			);
+		}
+
+		if ( ! empty( $a['showPrice'] ) ) {
+			printf(
+				'<div class="pcsbb-product-price" style="font-size:%dpx">%s</div>',
+				intval( $a['productPriceFontSize'] ),
+				wp_kses_post( $product->get_price_html() )
+			);
+		}
+
+		if ( ! empty( $a['showRating'] ) ) {
+			$avg = $product->get_average_rating();
+			if ( $avg > 0 ) {
+				printf(
+					'<div class="pcsbb-product-rating">%s</div>',
+					wp_kses_post( wc_get_rating_html( $avg ) )
+				);
+			}
+		}
+
+		// Buttons
+		$show_link = ! empty( $a['showProductLink'] );
+		$show_cart = ! empty( $a['showAddToCart'] );
+
+		if ( $show_link || $show_cart ) {
+			$layout      = $show_link && $show_cart ? sanitize_text_field( $a['buttonsLayout'] ) : 'stacked';
+			$gap         = intval( $a['buttonsGap'] );
+			$order       = sanitize_text_field( $a['buttonsOrder'] );
+			$layout_cls  = 'pcsbb-buttons-' . $layout;
+
+			printf(
+				'<div class="pcsbb-action-buttons %s" style="gap:%dpx">',
+				esc_attr( $layout_cls ),
+				absint( $gap )
+			);
+
+			// Render buttons in correct order
+			$cart_btn = '';
+			$link_btn = '';
+
+			if ( $show_cart ) {
+				$icon_pos  = sanitize_text_field( $a['addToCartIconPosition'] );
+				$icon_cls  = sanitize_html_class( $a['addToCartIcon'] );
+				$icon_html = $icon_cls ? sprintf( '<span class="dashicons %s"></span>', esc_attr( $icon_cls ) ) : '';
+				$btn_text  = esc_html( $a['addToCartText'] );
+				$full_cls  = ( ! $show_link && ! empty( $a['addToCartFullWidth'] ) ) ? 'pcsbb-btn-full-width' : ( ! $show_link ? 'pcsbb-btn-auto' : '' );
+				$cart_btn  = sprintf(
+					'<a href="%s?add-to-cart=%d" data-product-id="%d" class="pcsbb-add-to-cart %s" rel="nofollow">%s%s%s</a>',
+					esc_url( wc_get_cart_url() ),
+					$product_id,
+					$product_id,
+					esc_attr( $full_cls ),
+					'left' === $icon_pos ? $icon_html : '',
+					$btn_text,
+					'right' === $icon_pos ? $icon_html : ''
+				);
+			}
+
+			if ( $show_link ) {
+				$icon_pos  = sanitize_text_field( $a['productLinkIconPosition'] );
+				$icon_cls  = sanitize_html_class( $a['productLinkIcon'] );
+				$icon_html = $icon_cls ? sprintf( '<span class="dashicons %s"></span>', esc_attr( $icon_cls ) ) : '';
+				$full_cls  = ( ! $show_cart && ! empty( $a['productLinkFullWidth'] ) ) ? 'pcsbb-btn-full-width' : ( ! $show_cart ? 'pcsbb-btn-auto' : '' );
+				$link_btn  = sprintf(
+					'<a href="%s" class="pcsbb-product-link %s">%s%s%s</a>',
+					esc_url( $product_url ),
+					esc_attr( $full_cls ),
+					'left' === $icon_pos ? $icon_html : '',
+					esc_html__( 'View Product', 'product-carousel-slider-biddut-block' ),
+					'right' === $icon_pos ? $icon_html : ''
+				);
+			}
+
+			if ( 'cart-first' === $order ) {
+				echo wp_kses_post( $cart_btn . $link_btn );
 			} else {
-				if ( $show_link ) {
-					$this->render_product_link( $product, $attributes, $show_cart );
-				}
-				if ( $show_cart ) {
-					$this->render_add_to_cart( $product, $attributes, $show_link );
-				}
+				echo wp_kses_post( $link_btn . $cart_btn );
 			}
-			?>
-		</div>
-		<?php
-	}
 
-	/**
-	 * Render product link button.
-	 *
-	 * @param WC_Product $product      WooCommerce product object.
-	 * @param array      $attributes   Block attributes.
-	 * @param bool       $other_active Whether the other button (Add to Cart) is also shown.
-	 */
-	private function render_product_link( $product, $attributes, $other_active = false ) {
-		$icon          = ! empty( $attributes['productLinkIcon'] ) ? $attributes['productLinkIcon'] : 'dashicons-external';
-		$icon_position = ! empty( $attributes['productLinkIconPosition'] ) ? $attributes['productLinkIconPosition'] : 'right';
-
-		// Determine full-width class
-		$fw_class = '';
-		if ( $other_active ) {
-			// When paired, layout class handles width (stacked = both full, inline = flex)
-			$fw_class = '';
-		} else {
-			// Single button: use individual full-width attribute
-			$fw_class = ! empty( $attributes['productLinkFullWidth'] ) ? ' pcsbb-btn-full-width' : ' pcsbb-btn-auto';
+			echo '</div>'; // .pcsbb-action-buttons
 		}
-		?>
-		<a href="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>" class="pcsbb-product-link pcsbb-btn<?php echo esc_attr( $fw_class ); ?>">
-			<?php if ( 'left' === $icon_position ) : ?>
-				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
-			<?php endif; ?>
-			<span><?php esc_html_e( 'View Product', 'product-carousel-slider-biddut-block' ); ?></span>
-			<?php if ( 'right' === $icon_position ) : ?>
-				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
-			<?php endif; ?>
-		</a>
-		<?php
+
+		echo '</div>'; // .pcsbb-product-info
+		echo '</div>'; // .pcsbb-product-item
 	}
 
 	/**
-	 * Render add to cart button.
-	 *
-	 * @param WC_Product $product      WooCommerce product object.
-	 * @param array      $attributes   Block attributes.
-	 * @param bool       $other_active Whether the other button (View Product) is also shown.
+	 * Render the View All button
 	 */
-	private function render_add_to_cart( $product, $attributes, $other_active = false ) {
-		if ( ! $product->is_purchasable() || ! $product->is_in_stock() ) {
+	private function render_view_all( $a ) {
+		if ( empty( $a['viewAllUrl'] ) && empty( $a['viewAllText'] ) ) {
 			return;
 		}
+		 printf(
+			'<div class="pcsbb-view-all-wrapper"><a href="%s" class="pcsbb-view-all-button">%s</a></div>',
+			! empty( $a['viewAllUrl'] ) ? esc_url( $a['viewAllUrl'] ) : esc_url( wc_get_page_permalink( 'shop' ) ),
+			esc_html( $a['viewAllText'] )
+		);
+	}
 
-		$button_text   = ! empty( $attributes['addToCartText'] ) ? $attributes['addToCartText'] : __( 'Add to Cart', 'product-carousel-slider-biddut-block' );
-		$icon          = ! empty( $attributes['addToCartIcon'] ) ? $attributes['addToCartIcon'] : 'dashicons-cart';
-		$icon_position = ! empty( $attributes['addToCartIconPosition'] ) ? $attributes['addToCartIconPosition'] : 'left';
-
-		// Determine full-width class
-		$fw_class = '';
-		if ( ! $other_active ) {
-			$fw_class = ! empty( $attributes['addToCartFullWidth'] ) ? ' pcsbb-btn-full-width' : ' pcsbb-btn-auto';
+	/**
+	 * Get default attribute values as a flat array
+	 */
+	private function get_default_attributes() {
+		$defaults = array();
+		foreach ( $this->get_block_attributes() as $key => $def ) {
+			$defaults[ $key ] = $def['default'] ?? null;
 		}
-
-		$classes = array( 'pcsbb-add-to-cart', 'pcsbb-btn', 'button', 'add_to_cart_button', 'ajax_add_to_cart' );
-		if ( $fw_class ) {
-			$classes[] = trim( $fw_class );
-		}
-		?>
-		<a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>"
-		   data-quantity="1"
-		   data-product_id="<?php echo esc_attr( $product->get_id() ); ?>"
-		   data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>"
-		   class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
-		   rel="nofollow">
-			<?php if ( 'left' === $icon_position ) : ?>
-				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
-			<?php endif; ?>
-			<span><?php echo esc_html( $button_text ); ?></span>
-			<?php if ( 'right' === $icon_position ) : ?>
-				<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
-			<?php endif; ?>
-		</a>
-		<?php
+		return $defaults;
 	}
 }

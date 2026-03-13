@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider Biddut Block v1.1.0
+ * Product Carousel Slider for WooCommerce v1.2.0
  */
 
 :root {
@@ -76,10 +76,13 @@
 
 /* ===== MAIN WRAPPER ===== */
 .pcsbb-main-wrapper {
+  /* width:100% is required — without it, the main wrapper sizes to its content
+     (the carousel track's full scroll width), making $wrapper.width() in JS
+     return the total track width instead of the visible container width. */
   width: 100%;
-  margin: 0 auto;
   padding: 0;
   position: relative;
+  overflow-x: clip;
 }
 
 /* ===== HEADER (Title & Subtitle) ===== */
@@ -115,6 +118,13 @@
   padding: 0;
 }
 
+/* Arrow vertical anchor: sits at center of image portion only.
+   JS sets --pcsbb-image-center to (imageHeight/2 + 16px) after images load.
+   Fallback 40% is a reasonable approximation until JS runs. */
+.pcsbb-carousel-container .pcsbb-nav-arrow {
+  top: var(--pcsbb-image-center, 40%);
+}
+
 /* ===== CAROUSEL WRAPPER ===== */
 .pcsbb-carousel-wrapper {
   position: relative;
@@ -123,9 +133,18 @@
   user-select: none;
   /* Padding creates a "breathing zone" inside overflow:hidden so card shadows,
      borders and lift effects aren't hard-clipped at the edge */
-  padding: 16px 6px;
+  padding: 16px 0px;
   margin: -16px -6px;
   box-sizing: content-box;
+}
+
+/* Fit mode: remove horizontal breathing room so items size to exact container width.
+   Vertical padding kept so top/bottom shadows still have space. */
+.pcsbb-carousel-wrapper.pcsbb-fit-mode {
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .pcsbb-carousel-wrapper.dragging {
@@ -135,7 +154,7 @@
 /* ===== CAROUSEL TRACK ===== */
 .pcsbb-carousel-track {
   display: flex;
-  gap: 24px;   /* Desktop default — must match JS this.gap */
+  gap: 24px; /* Desktop default — must match JS this.gap */
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
 }
@@ -502,8 +521,12 @@
   align-items: center;
 }
 
-.pcsbb-main-wrapper[data-variant="gallery"] .pcsbb-buttons-stacked .pcsbb-add-to-cart,
-.pcsbb-main-wrapper[data-variant="gallery"] .pcsbb-buttons-stacked .pcsbb-product-link {
+.pcsbb-main-wrapper[data-variant="gallery"]
+  .pcsbb-buttons-stacked
+  .pcsbb-add-to-cart,
+.pcsbb-main-wrapper[data-variant="gallery"]
+  .pcsbb-buttons-stacked
+  .pcsbb-product-link {
   width: 100%;
 }
 
@@ -612,14 +635,24 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  /* Lock to a perfect circle — aspect-ratio prevents dashicons from stretching width */
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  max-width: 30px;
+  max-height: 30px;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  padding: 0;
+  overflow: hidden;
   background-color: var(--pcsbb-nav-bg-color, #ffffff);
-  border: 1px solid var(--pcsbb-border-color);
+  border: 1px solid var(--pcsbb-border-color, #e0e0e0);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   cursor: pointer;
   z-index: 10;
   transition: all 0.3s ease;
@@ -654,23 +687,26 @@
 }
 
 .pcsbb-nav-arrow-prev {
-  left: 15px; /* Brought inside */
+  left: 10px;
 }
 
 .pcsbb-nav-arrow-next {
-  right: 15px; /* Brought inside */
+  right: 10px;
 }
 
+/* Dashicons inside arrows: !important beats WordPress's global dashicons.css (width:20px).
+   display:flex centers the glyph inside the fixed-size container. */
 .pcsbb-nav-arrow .dashicons {
-  /* Dashicons require explicit width, height, line-height to render */
-  font-size: 18px;
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  display: inline-block;
+  font-size: 14px;
+  width: 14px !important;
+  height: 14px !important;
+  line-height: 14px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
   color: inherit;
-  vertical-align: middle;
-  text-align: center;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 /* ===== NAVIGATION DOTS ===== */
@@ -834,11 +870,6 @@
     gap: 20px;
   }
 
-  .pcsbb-nav-arrow {
-    width: 40px;
-    height: 40px;
-  }
-
   .pcsbb-nav-arrow-prev {
     left: 10px;
   }
@@ -848,10 +879,10 @@
   }
 
   .pcsbb-nav-arrow .dashicons {
-    font-size: 14px;
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
+    font-size: 13px;
+    width: 13px !important;
+    height: 13px !important;
+    line-height: 13px !important;
   }
 }
 
@@ -867,8 +898,12 @@
   }
 
   .pcsbb-nav-arrow {
-    width: 36px;
-    height: 36px;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+    max-width: 26px;
+    max-height: 26px;
   }
 
   .pcsbb-nav-arrow-prev {
@@ -876,14 +911,14 @@
   }
 
   .pcsbb-nav-arrow-next {
-    right: 10px;
+    right: 5px;
   }
 
   .pcsbb-nav-arrow .dashicons {
-    font-size: 12px;
-    width: 14px;
-    height: 14px;
-    line-height: 14px;
+    font-size: 11px;
+    width: 11px !important;
+    height: 11px !important;
+    line-height: 11px !important;
   }
 
   .pcsbb-main-wrapper[data-variant="card"] .pcsbb-product-info {
@@ -908,15 +943,19 @@
   }
 
   .pcsbb-nav-arrow {
-    width: 32px;
-    height: 32px;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    max-width: 22px;
+    max-height: 22px;
   }
 
   .pcsbb-nav-arrow .dashicons {
-    font-size: 11px;
-    width: 13px;
-    height: 13px;
-    line-height: 13px;
+    font-size: 10px;
+    width: 10px !important;
+    height: 10px !important;
+    line-height: 10px !important;
   }
 
   .pcsbb-nav-dots {

@@ -1,7 +1,7 @@
-# 🛍️ Product Carousel Slider Biddut Block
+# 🛍️ Product Carousel Slider for WooCommerce 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/WordPress-5.8%2B-0073AA?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress">
   <img src="https://img.shields.io/badge/WooCommerce-5.0%2B-96588A?style=for-the-badge&logo=woocommerce&logoColor=white" alt="WooCommerce">
   <img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP">
@@ -26,9 +26,9 @@
 
 ### 🎨 2 Beautiful Design Variants
 
-| Variant | Description |
-|---|---|
-| **Card Style** | Modern card-based layout with borders, shadows, and smooth hover effects |
+| Variant               | Description                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| **Card Style**        | Modern card-based layout with borders, shadows, and smooth hover effects            |
 | **Gallery (Default)** | Minimalist, image-first presentation with transparent backgrounds and centered text |
 
 ---
@@ -37,12 +37,12 @@
 
 Control the number of product columns independently for every device:
 
-| Device | Breakpoint | Max Columns |
-|---|---|---|
-| 🖥️ Desktop | 1280px+ | 1–6 columns |
-| 💻 Tablet | 768px – 1279px | 1–4 columns |
-| 📱 Mobile | 480px – 767px | 1–3 columns |
-| 📲 Phone | < 480px | 1–2 columns |
+| Device     | Breakpoint     | Max Columns |
+| ---------- | -------------- | ----------- |
+| 🖥️ Desktop | 1280px+        | 1–6 columns |
+| 💻 Tablet  | 768px – 1279px | 1–4 columns |
+| 📱 Mobile  | 480px – 767px  | 1–3 columns |
+| 📲 Phone   | < 480px        | 1–2 columns |
 
 ---
 
@@ -151,12 +151,12 @@ Show or hide any of the following elements independently:
 
 ## ⚙️ Requirements
 
-| Requirement | Minimum Version |
-|---|---|
-| WordPress | 5.8+ |
-| WooCommerce | 5.0+ |
-| PHP | 7.4+ |
-| Browser | Modern browser with JavaScript enabled |
+| Requirement | Minimum Version                        |
+| ----------- | -------------------------------------- |
+| WordPress   | 5.8+                                   |
+| WooCommerce | 5.0+                                   |
+| PHP         | 7.4+                                   |
+| Browser     | Modern browser with JavaScript enabled |
 
 ---
 
@@ -169,7 +169,7 @@ Show or hide any of the following elements independently:
 3. Click **Install Now**
 4. Click **Activate Plugin**
 5. Ensure **WooCommerce** is installed and activated
-6. Edit any page or post, add the **Product Carousel Slider** block (found under the *Biddut Blocks* category), and configure it in the sidebar panel
+6. Edit any page or post, add the **Product Carousel Slider** block (found under the _Biddut Blocks_ category), and configure it in the sidebar panel
 
 ### Manual Installation
 
@@ -183,7 +183,7 @@ Show or hide any of the following elements independently:
 
 1. Edit any **page or post** in the Gutenberg editor
 2. Click the **`+`** button to add a new block
-3. Search for **"Product Carousel Slider"** (listed under the *Biddut Blocks* category)
+3. Search for **"Product Carousel Slider"** (listed under the _Biddut Blocks_ category)
 4. Configure settings in the **right sidebar panel**
 5. Publish and preview!
 
@@ -191,12 +191,12 @@ Show or hide any of the following elements independently:
 
 ## 🌐 Browser Support
 
-| Browser | Support |
-|---|---|
-| Chrome | ✅ Latest |
-| Firefox | ✅ Latest |
-| Safari | ✅ Latest |
-| Edge | ✅ Latest |
+| Browser                                 | Support                                |
+| --------------------------------------- | -------------------------------------- |
+| Chrome                                  | ✅ Latest                              |
+| Firefox                                 | ✅ Latest                              |
+| Safari                                  | ✅ Latest                              |
+| Edge                                    | ✅ Latest                              |
 | Mobile (iOS Safari, Chrome for Android) | ✅ Supported with touch/swipe gestures |
 
 ---
@@ -209,7 +209,19 @@ This plugin **does not collect, store, or transmit any user data**. It only read
 
 ## 📋 Changelog
 
+### Version 1.2.0 - 2026-03-12 =
+- Added: Mobile Product Width control (under Design Variant) — choose between Full Width or Centered layout for products on mobile, applies to both slider and vertical stack modes
+- Added: Outer Padding & Margin controls (under Responsive Columns) — set independent X (left/right) and Y (top/bottom) padding and margin per device breakpoint (Desktop, Tablet, Mobile, Phone) for precise spacing control
+- Added: Navigation Arrow Size controls (under Navigation Settings) — independently set arrow button diameter and icon size per device breakpoint with live preview
+- Fixed: Navigation arrows were oval/stretched due to Dashicons stylesheet width conflict — resolved with explicit !important overrides and aspect-ratio locking on all devices
+- Fixed: Arrow vertical position now correctly centers on the product image area (not the full card including product info below), using JS image-height measurement with load-event fallback
+- Fixed: Arrow icon padding was too wide on large devices, making buttons appear rectangular — resolved with padding:0 and display:flex centering
+- Improved: Arrow size defaults refined across all breakpoints (Desktop/Tablet: 30px button / 14px icon, Mobile: 26px / 11px, Phone: 22px / 10px)
+- Improved: Per-block scoped CSS output via unique block ID for responsive padding, margin, and arrow sizes — no global style conflicts between multiple carousel instances on the same page
+
+
 ### Version 1.1.0 — 2026-02-20
+
 - **Improved UI/UX**: Sidebar panels restructured into context-aware panels for a cleaner editor experience
 - **Improved Settings**: "Image Display Options" and "Hover Effects" merged into "Image Settings"
 - **Improved Clarity**: "Product Selection" renamed to "Product Query"; "Carousel Settings" renamed to "Carousel Behavior"
@@ -219,7 +231,8 @@ This plugin **does not collect, store, or transmit any user data**. It only read
 - **Full Button Customization**: Added complete color, icon, and layout controls for View Product, Add to Cart, and View All buttons
 - **Removed**: Add to Cart "Button Style" dropdown — replaced by full color controls
 
-### Version 1.0.0 — 2026-02-18 *(Initial Release)*
+### Version 1.0.0 — 2026-02-18 _(Initial Release)_
+
 - Two design variants: **Card Style** and **Gallery (Default)**
 - Fully responsive column control for Desktop, Tablet, Mobile, and Phone
 - Native Gutenberg block with full sidebar settings panel
@@ -235,24 +248,31 @@ This plugin **does not collect, store, or transmit any user data**. It only read
 ## ❓ Frequently Asked Questions
 
 ### Does this plugin require WooCommerce?
+
 Yes. WooCommerce must be installed and activated for the plugin to function.
 
 ### Can I use multiple carousels on one page?
+
 Yes. You can add as many Product Carousel Slider blocks as you need on a single page, each with its own independent settings.
 
 ### Is the plugin mobile-friendly?
+
 Absolutely. The plugin is fully responsive with independent column control for every device size, and supports touch/swipe gestures on mobile.
 
 ### Does it support touch and swipe on mobile?
+
 Yes. The carousel supports native touch gestures for smooth swiping on all mobile and tablet devices.
 
 ### Can I customize the colors and styling?
+
 Yes. The plugin includes two design variants, full color controls for sections, products, and navigation — plus you can add your own custom CSS for further adjustments.
 
 ### How do I select products from multiple categories?
+
 In the Product Query settings, enter category slugs separated by commas — for example: `featured, new-arrivals, sale`.
 
 ### Why do the navigation arrows only appear on hover?
+
 This is an intentional design choice for a cleaner, less cluttered look. The arrows reveal themselves when a user hovers over the carousel. If you prefer them to always be visible, this can be overridden with a small CSS snippet.
 
 ---
