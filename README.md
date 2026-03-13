@@ -1,7 +1,7 @@
-# 🛍️ Product Carousel Slider for WooCommerce 
+# 🛍️ Product Carousel Slider for WooCommerce
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.3.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/WordPress-5.8%2B-0073AA?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress">
   <img src="https://img.shields.io/badge/WooCommerce-5.0%2B-96588A?style=for-the-badge&logo=woocommerce&logoColor=white" alt="WooCommerce">
   <img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP">
@@ -209,7 +209,11 @@ This plugin **does not collect, store, or transmit any user data**. It only read
 
 ## 📋 Changelog
 
-### Version 1.2.0 - 2026-03-12 =
+### Version 1.3.0 — 2026-03-13
+
+- Fixed: When "Disable Mobile Slider" was enabled and you resized the window from mobile back to a wider viewport, the page stayed locked in vertical stack mode — the carousel never came back. The resize listener is now always attached regardless of which mode initializes first, so switching between breakpoints works correctly in both directions.
+
+### Version 1.2.0 — 2026-03-12
 - Added: Mobile Product Width control (under Design Variant) — choose between Full Width or Centered layout for products on mobile, applies to both slider and vertical stack modes
 - Added: Outer Padding & Margin controls (under Responsive Columns) — set independent X (left/right) and Y (top/bottom) padding and margin per device breakpoint (Desktop, Tablet, Mobile, Phone) for precise spacing control
 - Added: Navigation Arrow Size controls (under Navigation Settings) — independently set arrow button diameter and icon size per device breakpoint with live preview

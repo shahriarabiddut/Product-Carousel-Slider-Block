@@ -1,6 +1,6 @@
 <?php
 /**
- * PCSBB Gutenberg Block Class v1.2.0
+ * PCSBB Gutenberg Block Class v1.3.0
  *
  * @package ProductCarouselSliderBiddutBlock
  */
@@ -119,7 +119,16 @@ class PCSBB_Gutenberg_Block {
 			'columnsMobile'            => array( 'type' => 'number',  'default' => 2 ),
 			'columnsPhone'             => array( 'type' => 'number',  'default' => 1 ),
 
-			// Task 2: Outer padding per device (under Responsive Columns)
+			// Product gap per device (carousel track gap, must stay in sync with JS)
+			'gapDesktop'               => array( 'type' => 'number',  'default' => 24 ),
+			'gapTablet'                => array( 'type' => 'number',  'default' => 20 ),
+			'gapMobile'                => array( 'type' => 'number',  'default' => 16 ),
+			'gapPhone'                 => array( 'type' => 'number',  'default' => 12 ),
+
+			// Mobile vertical gap (used when disableMobileSlider is true)
+			'mobileVerticalGap'        => array( 'type' => 'number',  'default' => 20 ),
+
+			//  Outer padding per device 
 			'outerPadXDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerPadYDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerPadXTablet'          => array( 'type' => 'number',  'default' => 0 ),
@@ -129,7 +138,7 @@ class PCSBB_Gutenberg_Block {
 			'outerPadXPhone'           => array( 'type' => 'number',  'default' => 0 ),
 			'outerPadYPhone'           => array( 'type' => 'number',  'default' => 0 ),
 
-			// Task 2: Outer margin per device
+			//  Outer margin per device
 			'outerMarXDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerMarYDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerMarXTablet'          => array( 'type' => 'number',  'default' => 0 ),
@@ -156,7 +165,7 @@ class PCSBB_Gutenberg_Block {
 			'prevArrowIcon'            => array( 'type' => 'string',  'default' => 'dashicons-arrow-left-alt2' ),
 			'nextArrowIcon'            => array( 'type' => 'string',  'default' => 'dashicons-arrow-right-alt2' ),
 
-			// Task 4: Arrow size controls per device (under Navigation)
+			// Arrow size controls per device 
 			'navArrowSizeDesktop'      => array( 'type' => 'number',  'default' => 30 ),
 			'navArrowSizeTablet'       => array( 'type' => 'number',  'default' => 30 ),
 			'navArrowSizeMobile'       => array( 'type' => 'number',  'default' => 26 ),
@@ -319,6 +328,10 @@ class PCSBB_Gutenberg_Block {
 				data-disable-mobile-slider="%s"
 				data-mobile-product-width="%s"
 				data-slider-fit-mode="%s"
+				data-gap-desktop="%d"
+				data-gap-tablet="%d"
+				data-gap-mobile="%d"
+				data-gap-phone="%d"
 			>',
 			esc_attr( $a['variant'] ),
 			intval( $a['columnsDesktop'] ),
@@ -339,7 +352,11 @@ class PCSBB_Gutenberg_Block {
 			$a['showGalleryOnHover'] ? 'true' : 'false',
 			$a['disableMobileSlider'] ? 'true' : 'false',
 			esc_attr( $a['mobileProductWidth'] ),
-			esc_attr( $a['sliderFitMode'] )
+			esc_attr( $a['sliderFitMode'] ),
+			intval( $a['gapDesktop'] ),
+			intval( $a['gapTablet'] ),
+			intval( $a['gapMobile'] ),
+			intval( $a['gapPhone'] )
 		);
 
 		// Product items
@@ -361,15 +378,10 @@ class PCSBB_Gutenberg_Block {
 
 		return ob_get_clean();
 	}
-
 	/**
-	 * Output scoped <style> block for this block instance.
-	 * Handles: responsive padding/margin (Task 2), arrow sizes (Task 4), mobile width (Task 1).
-	 */
-	/**
+	 * * Output scoped <style> block for this block instance.
 	 * Build scoped CSS string for this block instance.
 	 * Returns a plain CSS string — output as a <style> tag inside the block HTML.
-	 * Handles: responsive padding/margin (Task 2), arrow sizes (Task 4), mobile width (Task 1).
 	 *
 	 * @param string $block_id Unique block HTML ID.
 	 * @param array  $a        Block attributes.
@@ -408,6 +420,24 @@ class PCSBB_Gutenberg_Block {
 
 
 		$css = '';
+
+		// ── Carousel track gap (overrides global CSS gap at each breakpoint) ──
+		// MUST stay in sync with JS calculateDimensions() which also reads data-gap-* attrs.
+		$gap_d    = intval( $a['gapDesktop'] );
+		$gap_t    = intval( $a['gapTablet'] );
+		$gap_m    = intval( $a['gapMobile'] );
+		$gap_p    = intval( $a['gapPhone'] );
+		$vert_gap = intval( $a['mobileVerticalGap'] );
+
+		$css .= "{$id} .pcsbb-carousel-track{gap:{$gap_d}px;}";
+		$css .= "@media(max-width:1279px){{$id} .pcsbb-carousel-track{gap:{$gap_t}px;}}";
+		$css .= "@media(max-width:767px){{$id} .pcsbb-carousel-track{gap:{$gap_m}px;}}";
+		$css .= "@media(max-width:479px){{$id} .pcsbb-carousel-track{gap:{$gap_p}px;}}";
+
+		// ── Mobile vertical stack gap ──────────────────────────────────────────
+		// .pcsbb-mobile-vertical-container only exists when disableMobileSlider=true.
+		// Scoped ID rule has higher specificity than public.css class rule, so it always wins.
+		$css .= "{$id} .pcsbb-mobile-vertical-container{gap:{$vert_gap}px;}";
 
 		// Desktop base.
 		// Padding: straightforward, ID specificity beats class rule.

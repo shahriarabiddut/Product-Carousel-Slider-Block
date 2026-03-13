@@ -4,7 +4,7 @@ Tags: woocommerce, carousel, slider, products, gallery
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://buymeacoffee.com/shahriarabiddut
@@ -139,6 +139,9 @@ Full documentation is available on the WordPress Plugin Details page and in the 
 11. Mobile responsive view — vertical stack layout with slider disabled
 
 == Changelog ==
+= 1.3.0 - 2026-03-13 =
+* Fixed: When "Disable Mobile Slider" was enabled, resizing from a mobile viewport back to tablet or desktop left the page stuck in vertical stack mode. The carousel now correctly re-initializes when moving back to a wider breakpoint.
+
 = 1.2.0 - 2026-03-12 =
 * Added: Mobile Product Width control (under Design Variant) — choose between Full Width or Centered layout for products on mobile, applies to both slider and vertical stack modes
 * Added: Outer Padding & Margin controls (under Responsive Columns) — set independent X (left/right) and Y (top/bottom) padding and margin per device breakpoint (Desktop, Tablet, Mobile, Phone) for precise spacing control

@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider for WooCommerce v1.2.0
+ * Product Carousel Slider for WooCommerce v1.3.0
  */
 
 (function ($) {
@@ -93,8 +93,11 @@
           this.setupImageDots();
           this.updateNavigation();
           this.setupAutoplay();
-          this.setupResponsive();
         }
+
+        // Always attach the resize listener — even in mobile-vertical mode —
+        // so that returning to a wider viewport correctly re-initialises the carousel.
+        this.setupResponsive();
 
         this.hideLoader();
       }, 100);
@@ -243,15 +246,23 @@
         this.itemsPerView = this.columnsPhone;
       }
 
-      // Gap must match CSS .pcsbb-carousel-track gap at each breakpoint
+      // Gap must match CSS .pcsbb-carousel-track gap at each breakpoint.
+      // Values come from data-gap-* attributes (set by PHP render_block).
+      // Falls back to the historical defaults so existing blocks without the
+      // new attributes continue to work correctly.
+      const gapDesktop = parseInt(this.$wrapper.data("gap-desktop"), 10);
+      const gapTablet = parseInt(this.$wrapper.data("gap-tablet"), 10);
+      const gapMobile = parseInt(this.$wrapper.data("gap-mobile"), 10);
+      const gapPhone = parseInt(this.$wrapper.data("gap-phone"), 10);
+
       if (windowWidth >= 1280) {
-        this.gap = 24; // default CSS gap: 24px
+        this.gap = isNaN(gapDesktop) ? 24 : gapDesktop;
       } else if (windowWidth >= 768) {
-        this.gap = 20; // tablet CSS gap: 20px
+        this.gap = isNaN(gapTablet) ? 20 : gapTablet;
       } else if (windowWidth >= 480) {
-        this.gap = 16; // mobile CSS gap: 16px
+        this.gap = isNaN(gapMobile) ? 16 : gapMobile;
       } else {
-        this.gap = 12; // phone CSS gap: 12px
+        this.gap = isNaN(gapPhone) ? 12 : gapPhone;
       }
 
       // Each item has padding: 4px (gallery) or 0 (card), with box-sizing: border-box

@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider for WooCommerce - Gutenberg Block v1.2.0
+ * Product Carousel Slider for WooCommerce - Gutenberg Block v1.3.0
  */
 
 (function () {
@@ -61,7 +61,6 @@
 
       // Design Variant
       variant: { type: "string", default: "gallery" },
-      // Task 1: Mobile product width (under Design Variant)
       mobileProductWidth: { type: "string", default: "center" },
 
       // Responsive Columns
@@ -70,7 +69,15 @@
       columnsMobile: { type: "number", default: 2 },
       columnsPhone: { type: "number", default: 1 },
 
-      // Task 2: Outer padding per device (under Responsive Columns)
+      // Product gap per device (carousel track gap — must stay in sync with public.js)
+      gapDesktop: { type: "number", default: 24 },
+      gapTablet: { type: "number", default: 20 },
+      gapMobile: { type: "number", default: 16 },
+      gapPhone: { type: "number", default: 12 },
+
+      // Mobile vertical stack gap (used when disableMobileSlider is true)
+      mobileVerticalGap: { type: "number", default: 20 },
+
       outerPadXDesktop: { type: "number", default: 0 },
       outerPadYDesktop: { type: "number", default: 0 },
       outerPadXTablet: { type: "number", default: 0 },
@@ -79,7 +86,6 @@
       outerPadYMobile: { type: "number", default: 0 },
       outerPadXPhone: { type: "number", default: 0 },
       outerPadYPhone: { type: "number", default: 0 },
-      // Task 2: Outer margin per device
       outerMarXDesktop: { type: "number", default: 0 },
       outerMarYDesktop: { type: "number", default: 0 },
       outerMarXTablet: { type: "number", default: 0 },
@@ -105,7 +111,6 @@
       navigationStyle: { type: "string", default: "arrows" },
       prevArrowIcon: { type: "string", default: "dashicons-arrow-left-alt2" },
       nextArrowIcon: { type: "string", default: "dashicons-arrow-right-alt2" },
-      // Task 4: Arrow size controls per device
       navArrowSizeDesktop: { type: "number", default: 30 },
       navArrowSizeTablet: { type: "number", default: 30 },
       navArrowSizeMobile: { type: "number", default: 26 },
@@ -602,7 +607,29 @@
               createNumberCell("📲 Phone ", "columnsPhone", 1, 1, 3),
             ),
 
-            // ── Outer Padding (collapsible) ──────────────────────────
+            // ── Product Gap ──────────────────────────────────────────
+            divider,
+            subheading("Product Gap (px)"),
+            el(
+              "p",
+              {
+                style: {
+                  fontSize: "11px",
+                  color: "#757575",
+                  margin: "0 0 8px",
+                },
+              },
+              "Gap between products in the carousel track, per device.",
+            ),
+            deviceGrid4([
+              {
+                label: "Gap",
+                keys: ["gapDesktop", "gapTablet", "gapMobile", "gapPhone"],
+                defaults: [24, 20, 16, 12],
+                min: 0,
+                max: 80,
+              },
+            ]),
             divider,
             collapsibleToggle(
               "Outer Padding (px)",
@@ -785,6 +812,17 @@
                 setAttributes({ disableMobileSlider: value }),
               help: "Show vertical list on mobile (<768px) instead of carousel",
             }),
+            attributes.disableMobileSlider &&
+              el(RangeControl, {
+                label: "Mobile Vertical Gap (px)",
+                value: attributes.mobileVerticalGap,
+                onChange: (value) =>
+                  setAttributes({ mobileVerticalGap: value }),
+                min: 0,
+                max: 80,
+                step: 2,
+                help: "Gap between products in the vertical stack",
+              }),
             divider,
             el(
               "p",
@@ -890,7 +928,6 @@
                       ["BG Hover", "navBgHoverColor", "#333333"],
                     ]),
                     divider,
-                    // Task 4: Arrow size controls per device (collapsible)
                     collapsibleToggle(
                       "Arrow Size (px) — per Device",
                       arrowSizeOpen,
