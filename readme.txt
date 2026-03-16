@@ -1,19 +1,19 @@
-=== Product Carousel Slider for WooCommerce ===
+=== Product Carousel Slider for WooCommerce (Biddut Block) ===
 Contributors: shahriarabiddut
 Tags: woocommerce, carousel, slider, products, gallery
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://buymeacoffee.com/shahriarabiddut
 
-Beautiful, Responsive Product Carousel Slider Block with responsive columns, hover effects, gallery navigation, and add to cart functionality.
+Beautiful Product Carousel Slider for WooCommerce Block (Biddut Block) with responsive columns, hover effects, navigation, and lots of functionality.
 
 == Description ==
 
-Transform your WooCommerce store with a stunning, fully responsive **Product Carousel Slider** — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
+Transform your WooCommerce store with a stunning, fully responsive **Product Carousel Slider For WooCommerce (Biddut Block)** — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
 
 = Design Variants =
 
@@ -139,6 +139,9 @@ Full documentation is available on the WordPress Plugin Details page and in the 
 11. Mobile responsive view — vertical stack layout with slider disabled
 
 == Changelog ==
+= 1.4.0 - 2026-03-13 =
+* Added: Live editor preview — block now renders a real server-side preview inside Gutenberg; every control change reflects instantly in the editor canvas exactly as it appears on the frontend.
+
 = 1.3.0 - 2026-03-13 =
 * Fixed: When "Disable Mobile Slider" was enabled, resizing from a mobile viewport back to tablet or desktop left the page stuck in vertical stack mode. The carousel now correctly re-initializes when moving back to a wider breakpoint.
 
@@ -202,7 +205,7 @@ Full documentation is available on the WordPress Plugin Details page and in the 
 
 This plugin does not collect, store, or transmit any user data. It only reads and displays WooCommerce product information already present in your database.
 
-= Support or Feature Requests=
+= Support or Feature Requests =
 
 * [GitHub Repository](https://github.com/shahriarabiddut/Product-Carousel-Slider-Block)
 * [WordPress Support Forum](https://wordpress.org/support/plugin/product-carousel-slider-biddut-block/)

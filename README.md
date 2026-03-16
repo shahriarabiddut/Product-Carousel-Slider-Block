@@ -1,7 +1,7 @@
-# 🛍️ Product Carousel Slider for WooCommerce
+# 🛍️ Product Carousel Slider for WooCommerce (Biddut Block)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.3.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.4.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/WordPress-5.8%2B-0073AA?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress">
   <img src="https://img.shields.io/badge/WooCommerce-5.0%2B-96588A?style=for-the-badge&logo=woocommerce&logoColor=white" alt="WooCommerce">
   <img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP">
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Transform your WooCommerce store with a stunning, fully responsive <strong>Product Carousel Slider</strong> — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
+  Transform your WooCommerce store with a stunning, fully responsive <strong>Product Carousel Slider for WooCommerce (Biddut Block)</strong> — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
 </p>
 
 ---
@@ -209,11 +209,16 @@ This plugin **does not collect, store, or transmit any user data**. It only read
 
 ## 📋 Changelog
 
+### Version 1.4.0 — 2026-03-13
+
+- Added: Live editor preview — block now renders a real server-side preview inside Gutenberg; every control change reflects instantly in the editor canvas exactly as it appears on the frontend.
+
 ### Version 1.3.0 — 2026-03-13
 
 - Fixed: When "Disable Mobile Slider" was enabled and you resized the window from mobile back to a wider viewport, the page stayed locked in vertical stack mode — the carousel never came back. The resize listener is now always attached regardless of which mode initializes first, so switching between breakpoints works correctly in both directions.
 
 ### Version 1.2.0 — 2026-03-12
+
 - Added: Mobile Product Width control (under Design Variant) — choose between Full Width or Centered layout for products on mobile, applies to both slider and vertical stack modes
 - Added: Outer Padding & Margin controls (under Responsive Columns) — set independent X (left/right) and Y (top/bottom) padding and margin per device breakpoint (Desktop, Tablet, Mobile, Phone) for precise spacing control
 - Added: Navigation Arrow Size controls (under Navigation Settings) — independently set arrow button diameter and icon size per device breakpoint with live preview
@@ -222,7 +227,6 @@ This plugin **does not collect, store, or transmit any user data**. It only read
 - Fixed: Arrow icon padding was too wide on large devices, making buttons appear rectangular — resolved with padding:0 and display:flex centering
 - Improved: Arrow size defaults refined across all breakpoints (Desktop/Tablet: 30px button / 14px icon, Mobile: 26px / 11px, Phone: 22px / 10px)
 - Improved: Per-block scoped CSS output via unique block ID for responsive padding, margin, and arrow sizes — no global style conflicts between multiple carousel instances on the same page
-
 
 ### Version 1.1.0 — 2026-02-20
 
