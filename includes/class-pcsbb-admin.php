@@ -433,7 +433,7 @@ class PCSBB_Admin {
 			<div class="pcsbb-page-header">
 				<h1>
 					<span class="dashicons dashicons-images-alt2"></span>
-					<?php esc_html_e( 'Product Carousel Slider for WooCommerce — Biddut Block', 'product-carousel-slider-biddut-block' ); ?>
+					<?php esc_html_e( 'Product Carousel Slider for WooCommerce (Biddut Block)', 'product-carousel-slider-biddut-block' ); ?>
 				</h1>
 			</div>
 
@@ -669,7 +669,7 @@ class PCSBB_Admin {
 
 		$plugins = array(
 			array(
-				'name'        => 'Product Carousel Slider for WooCommerce',
+				'name'        => 'Product Carousel Slider for WooCommerce (Biddut Block)',
 				'icon'        => 'https://ps.w.org/product-carousel-slider-biddut-block/assets/icon-256x256.png?rev=3463981',
 				'url'         => 'https://wordpress.org/plugins/product-carousel-slider-biddut-block/',
 				'description' => 'Responsive product carousel block with configurable columns, hover effects, gallery navigation, and WooCommerce add-to-cart.',

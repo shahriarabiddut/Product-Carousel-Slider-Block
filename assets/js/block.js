@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider for WooCommerce - Gutenberg Block v1.3.0
+ * Product Carousel Slider for WooCommerce (Biddut Block) v1.4.0
  */
 
 (function () {
@@ -13,15 +13,24 @@
     TextControl,
     CheckboxControl,
     RadioControl,
+    Spinner,
   } = wp.components;
   const { __ } = wp.i18n;
-  const { createElement: el, Fragment, useState } = wp.element;
-  const { useSelect } = wp.data;
+  const {
+    createElement: el,
+    Fragment,
+    useState,
+    useEffect,
+    useRef,
+  } = wp.element;
+  const { useSelect, useDispatch } = wp.data;
+  const ServerSideRender = wp.serverSideRender;
 
   registerBlockType("pcsbb/carousel", {
+    apiVersion: 3,
     title: "Product Carousel Slider",
     description:
-      "Product Carousel Slider for WooCommerce with Card and Art Gallery styles",
+      "Product Carousel Slider for WooCommerce (Biddut Block) with Card and Art Gallery styles",
     category: "biddut-blocks",
     icon: "images-alt2",
     keywords: [
@@ -61,6 +70,7 @@
 
       // Design Variant
       variant: { type: "string", default: "gallery" },
+      //Mobile product width
       mobileProductWidth: { type: "string", default: "center" },
 
       // Responsive Columns
@@ -78,6 +88,7 @@
       // Mobile vertical stack gap (used when disableMobileSlider is true)
       mobileVerticalGap: { type: "number", default: 20 },
 
+      // Outer padding per device
       outerPadXDesktop: { type: "number", default: 0 },
       outerPadYDesktop: { type: "number", default: 0 },
       outerPadXTablet: { type: "number", default: 0 },
@@ -86,6 +97,7 @@
       outerPadYMobile: { type: "number", default: 0 },
       outerPadXPhone: { type: "number", default: 0 },
       outerPadYPhone: { type: "number", default: 0 },
+      // Outer margin per device
       outerMarXDesktop: { type: "number", default: 0 },
       outerMarYDesktop: { type: "number", default: 0 },
       outerMarXTablet: { type: "number", default: 0 },
@@ -111,6 +123,7 @@
       navigationStyle: { type: "string", default: "arrows" },
       prevArrowIcon: { type: "string", default: "dashicons-arrow-left-alt2" },
       nextArrowIcon: { type: "string", default: "dashicons-arrow-right-alt2" },
+      //  Arrow size controls per device
       navArrowSizeDesktop: { type: "number", default: 30 },
       navArrowSizeTablet: { type: "number", default: 30 },
       navArrowSizeMobile: { type: "number", default: 26 },
@@ -191,13 +204,72 @@
     },
 
     edit: function (props) {
-      const { attributes, setAttributes } = props;
+      const { attributes, setAttributes, clientId } = props;
       const blockProps = useBlockProps ? useBlockProps() : {};
+      const { selectBlock } = useDispatch("core/block-editor");
 
       // ── COLLAPSIBLE STATE ─────────────────────────────────────────
       const [paddingOpen, setPaddingOpen] = useState(false);
       const [marginOpen, setMarginOpen] = useState(false);
       const [arrowSizeOpen, setArrowSizeOpen] = useState(false);
+
+      // ── LIVE PREVIEW: ref + carousel reinit on every SSR refresh ──
+      // ServerSideRender fetches the PHP render_callback via REST and swaps
+      // the innerHTML when done. A MutationObserver detects that swap and
+      // reinitialises PCSBBCarousel on the fresh product HTML.
+      const previewRef = useRef(null);
+      useEffect(
+        function () {
+          if (!previewRef.current) return;
+          var container = previewRef.current;
+          var observer;
+          var initTimer;
+          var settled = false;
+
+          function tryInit() {
+            if (settled) return;
+            var $ = window.jQuery;
+            if (!$ || !window.PCSBBCarousel) return;
+            var wrappers = container.querySelectorAll(
+              ".pcsbb-carousel-wrapper",
+            );
+            if (!wrappers.length) return;
+            // Guard: fresh SSR = flat .pcsbb-product-item list, no .pcsbb-carousel-track.
+            // If the track already exists the carousel already ran on this DOM; skip.
+            var fresh = true;
+            wrappers.forEach(function (w) {
+              if (w.querySelector(".pcsbb-carousel-track")) fresh = false;
+            });
+            if (!fresh) return;
+            settled = true;
+            if (observer) observer.disconnect();
+            wrappers.forEach(function (wrapper) {
+              var $w = $(wrapper);
+              var existing = $w.data("pcsbb-carousel");
+              if (existing && typeof existing.destroy === "function") {
+                existing.destroy();
+                $w.removeData("pcsbb-carousel");
+              }
+              $w.data("pcsbb-carousel", new window.PCSBBCarousel($w));
+            });
+          }
+
+          // subtree:true catches SSR replacing innerHTML of its wrapper div
+          observer = new MutationObserver(function () {
+            clearTimeout(initTimer);
+            initTimer = setTimeout(tryInit, 200);
+          });
+          observer.observe(container, { childList: true, subtree: true });
+          // Immediate attempt for cached SSR responses
+          initTimer = setTimeout(tryInit, 300);
+
+          return function () {
+            clearTimeout(initTimer);
+            if (observer) observer.disconnect();
+          };
+        },
+        [attributes],
+      );
 
       const categories = useSelect((select) => {
         const store = select("core");
@@ -475,6 +547,7 @@
             PanelBody,
             { title: "Header (Title & Subtitle)", initialOpen: false },
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Enable Header Section",
               checked: attributes.showHeader,
               onChange: (value) => setAttributes({ showHeader: value }),
@@ -485,6 +558,8 @@
                 Fragment,
                 null,
                 el(TextControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Section Title",
                   value: attributes.sectionTitle,
                   onChange: (value) => setAttributes({ sectionTitle: value }),
@@ -514,6 +589,8 @@
                   ),
                 ),
                 el(TextControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Section Subtitle",
                   value: attributes.sectionSubtitle,
                   onChange: (value) =>
@@ -550,6 +627,8 @@
             PanelBody,
             { title: "Design Variant", initialOpen: true },
             el(SelectControl, {
+              __next40pxDefaultSize: true,
+              __nextHasNoMarginBottom: true,
               label: "Select Design Style",
               value: attributes.variant,
               options: [
@@ -748,6 +827,8 @@
             }),
             divider,
             el(SelectControl, {
+              __next40pxDefaultSize: true,
+              __nextHasNoMarginBottom: true,
               label: "Image Hover Effect",
               value: attributes.hoverEffect,
               options: [
@@ -759,12 +840,14 @@
               onChange: (value) => setAttributes({ hoverEffect: value }),
             }),
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Gallery Image on Hover",
               checked: attributes.showGalleryOnHover,
               onChange: (value) => setAttributes({ showGalleryOnHover: value }),
               help: "Switch to second product image on hover (if available)",
             }),
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Image Dots",
               checked: attributes.showImageDots,
               onChange: (value) => setAttributes({ showImageDots: value }),
@@ -777,12 +860,15 @@
             PanelBody,
             { title: "Carousel Behavior", initialOpen: false },
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Enable Autoplay",
               checked: attributes.autoplay,
               onChange: (value) => setAttributes({ autoplay: value }),
             }),
             attributes.autoplay &&
               el(RangeControl, {
+                __next40pxDefaultSize: true,
+                __nextHasNoMarginBottom: true,
                 label: "Autoplay Delay (ms)",
                 value: attributes.autoplayDelay,
                 onChange: (value) => setAttributes({ autoplayDelay: value }),
@@ -791,6 +877,7 @@
                 step: 500,
               }),
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Loop Carousel",
               checked: attributes.loop,
               onChange: (value) => setAttributes({ loop: value }),
@@ -798,6 +885,8 @@
             }),
             attributes.loop &&
               el(RangeControl, {
+                __next40pxDefaultSize: true,
+                __nextHasNoMarginBottom: true,
                 label: "Transition Speed (ms)",
                 value: attributes.transitionSpeed,
                 onChange: (value) => setAttributes({ transitionSpeed: value }),
@@ -806,6 +895,7 @@
                 step: 100,
               }),
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Disable Mobile Slider",
               checked: attributes.disableMobileSlider,
               onChange: (value) =>
@@ -814,6 +904,8 @@
             }),
             attributes.disableMobileSlider &&
               el(RangeControl, {
+                __next40pxDefaultSize: true,
+                __nextHasNoMarginBottom: true,
                 label: "Mobile Vertical Gap (px)",
                 value: attributes.mobileVerticalGap,
                 onChange: (value) =>
@@ -853,6 +945,7 @@
             PanelBody,
             { title: "Navigation", initialOpen: false },
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Navigation",
               checked: attributes.showNavigation,
               onChange: (value) => setAttributes({ showNavigation: value }),
@@ -862,6 +955,8 @@
                 Fragment,
                 null,
                 el(SelectControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Navigation Style",
                   value: attributes.navigationStyle,
                   options: [
@@ -892,6 +987,8 @@
                         },
                       },
                       el(TextControl, {
+                        __next40pxDefaultSize: true,
+                        __nextHasNoMarginBottom: true,
                         label: "Previous",
                         value: attributes.prevArrowIcon,
                         onChange: (value) =>
@@ -899,6 +996,8 @@
                         placeholder: "dashicons-arrow-left-alt2",
                       }),
                       el(TextControl, {
+                        __next40pxDefaultSize: true,
+                        __nextHasNoMarginBottom: true,
                         label: "Next",
                         value: attributes.nextArrowIcon,
                         onChange: (value) =>
@@ -928,6 +1027,7 @@
                       ["BG Hover", "navBgHoverColor", "#333333"],
                     ]),
                     divider,
+                    // Arrow size controls per device (collapsible)
                     collapsibleToggle(
                       "Arrow Size (px) — per Device",
                       arrowSizeOpen,
@@ -1006,6 +1106,7 @@
                 .filter((cat) => cat.value !== "")
                 .map((cat) =>
                   el(CheckboxControl, {
+                    __nextHasNoMarginBottom: true,
                     key: cat.value,
                     label: cat.label,
                     checked:
@@ -1023,6 +1124,8 @@
                 ),
             ),
             el(RangeControl, {
+              __next40pxDefaultSize: true,
+              __nextHasNoMarginBottom: true,
               label: "Number of Products",
               value: attributes.limit,
               onChange: (value) => setAttributes({ limit: value }),
@@ -1043,6 +1146,8 @@
                 "div",
                 null,
                 el(SelectControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Order By",
                   value: attributes.orderby,
                   options: [
@@ -1060,6 +1165,8 @@
                 "div",
                 null,
                 el(SelectControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Order",
                   value: attributes.order,
                   options: [
@@ -1079,6 +1186,7 @@
 
             // Product Title
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Product Title",
               checked: attributes.showTitle,
               onChange: (value) => setAttributes({ showTitle: value }),
@@ -1114,6 +1222,7 @@
 
             // Product Price
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Price",
               checked: attributes.showPrice,
               onChange: (value) => setAttributes({ showPrice: value }),
@@ -1144,6 +1253,7 @@
             divider,
 
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Rating",
               checked: attributes.showRating,
               onChange: (value) => setAttributes({ showRating: value }),
@@ -1153,6 +1263,7 @@
 
             // Sale Label
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Sale Label",
               checked: attributes.showSaleLabel,
               onChange: (value) => setAttributes({ showSaleLabel: value }),
@@ -1173,6 +1284,8 @@
                     },
                   },
                   el(TextControl, {
+                    __next40pxDefaultSize: true,
+                    __nextHasNoMarginBottom: true,
                     label: "Sale Text",
                     value: attributes.saleLabelText || "SALE",
                     onChange: (value) =>
@@ -1180,6 +1293,8 @@
                     placeholder: "SALE",
                   }),
                   el(SelectControl, {
+                    __next40pxDefaultSize: true,
+                    __nextHasNoMarginBottom: true,
                     label: "Position",
                     value: attributes.saleLabelPosition || "top-right",
                     options: [
@@ -1202,6 +1317,7 @@
 
             // Sold Out Label
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Sold Out Label",
               checked: attributes.showOutOfStockLabel || false,
               onChange: (value) =>
@@ -1223,6 +1339,8 @@
                     },
                   },
                   el(TextControl, {
+                    __next40pxDefaultSize: true,
+                    __nextHasNoMarginBottom: true,
                     label: "Sold Out Text",
                     value: attributes.outOfStockLabelText || "Sold Out",
                     onChange: (value) =>
@@ -1230,6 +1348,8 @@
                     placeholder: "Sold Out",
                   }),
                   el(SelectControl, {
+                    __next40pxDefaultSize: true,
+                    __nextHasNoMarginBottom: true,
                     label: "Position",
                     value: attributes.outOfStockLabelPosition || "top-right",
                     options: [
@@ -1252,6 +1372,7 @@
 
             // ── View Product Button ──────────────────────────────────
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show View Product Button",
               checked: attributes.showProductLink,
               onChange: (value) => setAttributes({ showProductLink: value }),
@@ -1276,6 +1397,8 @@
                   style: { borderTop: "1px solid #e0e0e0", margin: "10px 0" },
                 }),
                 el(TextControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Icon (Dashicon class)",
                   value: attributes.productLinkIcon,
                   onChange: (value) =>
@@ -1299,6 +1422,7 @@
                 // Single-button full-width toggle (only when other button is OFF)
                 !attributes.showAddToCart &&
                   el(ToggleControl, {
+                    __nextHasNoMarginBottom: true,
                     label: "Full Width Button",
                     checked: attributes.productLinkFullWidth,
                     onChange: (value) =>
@@ -1311,6 +1435,7 @@
 
             // ── Add to Cart Button ───────────────────────────────────
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show Add to Cart Button",
               checked: attributes.showAddToCart,
               onChange: (value) => setAttributes({ showAddToCart: value }),
@@ -1320,6 +1445,8 @@
                 Fragment,
                 null,
                 el(TextControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Button Text",
                   value: attributes.addToCartText,
                   onChange: (value) => setAttributes({ addToCartText: value }),
@@ -1344,6 +1471,8 @@
                     style: { borderTop: "1px solid #e0e0e0", margin: "10px 0" },
                   }),
                   el(TextControl, {
+                    __next40pxDefaultSize: true,
+                    __nextHasNoMarginBottom: true,
                     label: "Icon (Dashicon class)",
                     value: attributes.addToCartIcon,
                     onChange: (value) =>
@@ -1367,6 +1496,7 @@
                   // Single-button full-width toggle (only when other button is OFF)
                   !attributes.showProductLink &&
                     el(ToggleControl, {
+                      __nextHasNoMarginBottom: true,
                       label: "Full Width Button",
                       checked: attributes.addToCartFullWidth,
                       onChange: (value) =>
@@ -1443,6 +1573,7 @@
 
             // ── View All Button ──────────────────────────────────────
             el(ToggleControl, {
+              __nextHasNoMarginBottom: true,
               label: "Show View All Button",
               checked: attributes.showViewAll,
               onChange: (value) => setAttributes({ showViewAll: value }),
@@ -1453,6 +1584,8 @@
                 Fragment,
                 null,
                 el(TextControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Button Text",
                   value: attributes.viewAllText,
                   onChange: (value) => setAttributes({ viewAllText: value }),
@@ -1460,6 +1593,8 @@
                   help: "e.g., 'View All', 'View Shop', 'See More'",
                 }),
                 el(TextControl, {
+                  __next40pxDefaultSize: true,
+                  __nextHasNoMarginBottom: true,
                   label: "Button URL",
                   value: attributes.viewAllUrl,
                   onChange: (value) => setAttributes({ viewAllUrl: value }),
@@ -1503,126 +1638,59 @@
           ), // end Display Options PanelBody
         ), // end InspectorControls
 
-        // ── EDITOR PREVIEW ────────────────────────────────────────
+        // ── LIVE EDITOR PREVIEW via ServerSideRender ─────────────────
+        // The blockProps outer div is Gutenberg's click-to-select target.
+        // pointer-events:none on a child div passes clicks THROUGH to elements
+        // visually behind the block (parent Container), NOT up to blockProps.
+        // Solution: a transparent position:absolute overlay on top of the SSR
+        // content. Clicks land on the overlay → bubble up to blockProps div →
+        // Gutenberg selects this block. The overlay also prevents carousel
+        // link/button interactions inside the editor.
         el(
           "div",
-          blockProps,
+          Object.assign({}, blockProps, { ref: previewRef }),
           el(
             "div",
-            {
-              className: "pcsbb-editor-preview",
+            { style: { position: "relative" } },
+            el(ServerSideRender, {
+              block: "pcsbb/carousel",
+              attributes: attributes,
+              LoadingResponsePlaceholder: function () {
+                return el(
+                  "div",
+                  {
+                    style: {
+                      padding: "60px 20px",
+                      textAlign: "center",
+                      background: "#f8f9fa",
+                      border: "2px dashed #ddd",
+                      borderRadius: "8px",
+                    },
+                  },
+                  el(Spinner),
+                  el(
+                    "p",
+                    { style: { marginTop: "12px", color: "#666" } },
+                    "Loading carousel preview…",
+                  ),
+                );
+              },
+            }),
+            // Transparent overlay — catches all clicks and explicitly selects
+            // this block via the block-editor store. This is the only reliable
+            // method; event bubbling alone doesn't trigger Gutenberg selection.
+            el("div", {
               style: {
-                padding: "40px 20px",
-                background: "#f8f9fa",
-                border: "2px dashed #ccc",
-                borderRadius: "8px",
-                textAlign: "center",
+                position: "absolute",
+                inset: "0",
+                zIndex: 10,
+                cursor: "default",
               },
-            },
-            attributes.showHeader &&
-              (attributes.sectionTitle || attributes.sectionSubtitle) &&
-              el(
-                "div",
-                { style: { marginBottom: "20px" } },
-                attributes.sectionTitle &&
-                  el(
-                    "h2",
-                    {
-                      style: {
-                        fontSize: "24px",
-                        fontWeight: "600",
-                        marginBottom: "8px",
-                        textTransform: "uppercase",
-                        letterSpacing: "2px",
-                      },
-                    },
-                    attributes.sectionTitle,
-                  ),
-                attributes.sectionSubtitle &&
-                  el(
-                    "h3",
-                    {
-                      style: {
-                        fontSize: "18px",
-                        fontWeight: "300",
-                        color: "#666",
-                        marginTop: "0",
-                      },
-                    },
-                    attributes.sectionSubtitle,
-                  ),
-              ),
-            el(
-              "div",
-              { style: { fontSize: "16px", color: "#333" } },
-              el("strong", null, "🛍️ Product Carousel : Biddut Blocks"),
-            ),
-            el(
-              "p",
-              { style: { margin: "10px 0", color: "#666" } },
-              "Style: " +
-                (attributes.variant === "card" ? "Card Style" : "Art Gallery"),
-            ),
-            attributes.categories.length > 0 &&
-              el(
-                "p",
-                {
-                  style: {
-                    margin: "10px 0",
-                    color: "#0073aa",
-                    fontSize: "14px",
-                  },
-                },
-                "📁 Categories: " + attributes.categories.join(", "),
-              ),
-            attributes.showAddToCart &&
-              el(
-                "p",
-                {
-                  style: {
-                    margin: "10px 0",
-                    color: "#0073aa",
-                    fontSize: "14px",
-                  },
-                },
-                "✓ Add to Cart enabled",
-              ),
-            attributes.disableMobileSlider &&
-              el(
-                "p",
-                {
-                  style: {
-                    margin: "10px 0",
-                    color: "#e74c3c",
-                    fontSize: "14px",
-                  },
-                },
-                "📱 Mobile Slider Disabled - Vertical layout on phones",
-              ),
-            el(
-              "p",
-              { style: { margin: "10px 0", color: "#666", fontSize: "14px" } },
-              "Columns: 🖥️ " +
-                attributes.columnsDesktop +
-                " | 💻 " +
-                attributes.columnsTablet +
-                " | 📱 " +
-                attributes.columnsMobile +
-                " | 📲 " +
-                attributes.columnsPhone,
-            ),
-            el(
-              "p",
-              {
-                style: {
-                  fontSize: "12px",
-                  fontStyle: "italic",
-                  color: "#999",
-                  marginTop: "20px",
-                },
+              onClick: function (e) {
+                e.stopPropagation();
+                selectBlock(clientId);
               },
-              "Preview will appear on the frontend. Configure all settings in the sidebar →",
-            ),
+            }),
           ),
         ),
       );

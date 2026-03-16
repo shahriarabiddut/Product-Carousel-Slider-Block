@@ -73,7 +73,7 @@ class PCSBB_Core {
 		?>
 		<div class="notice notice-warning is-dismissible">
 			<p>
-				<strong><?php esc_html_e( 'Product Carousel Slider for WooCommerce:', 'product-carousel-slider-biddut-block' ); ?></strong>
+				<strong><?php esc_html_e( 'Product Carousel Slider for WooCommerce (Biddut Block):', 'product-carousel-slider-biddut-block' ); ?></strong>
 				<?php esc_html_e( 'This plugin requires WooCommerce to be installed and activated.', 'product-carousel-slider-biddut-block' ); ?>
 				<a href="<?php echo esc_url( admin_url( 'plugin-install.php?s=woocommerce&tab=search&type=term' ) ); ?>">
 					<?php esc_html_e( 'Install WooCommerce', 'product-carousel-slider-biddut-block' ); ?>

@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Product Carousel Slider for WooCommerce
+ * Plugin Name: Product Carousel Slider for WooCommerce (Biddut Block)
  * Plugin URI: https://github.com/shahriarabiddut/Product-Carousel-Slider-Block
- * Description: Beautiful, responsive Product Carousel Slider Block with responsive columns, hover effects, gallery navigation, and add to cart functionality.
- * Version: 1.3.0
+ * Description: Beautiful Product Carousel Slider for WooCommerce Block (Biddut Block) with responsive columns, hover effects, navigation, and lots of functionality.
+ * Version: 1.4.0
  * Author: Shahriar Ahmed Biddut
  * Author URI: https://github.com/shahriarabiddut
  * License: GPL v2 or later
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'PCSBB_VERSION', '1.3.0' );
+define( 'PCSBB_VERSION', '1.4.0' );
 define( 'PCSBB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PCSBB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PCSBB_PLUGIN_FILE', __FILE__ );
@@ -93,7 +93,7 @@ function pcsbb_activation_admin_notice() {
 		?>
 		<div class="notice notice-warning is-dismissible">
 			<p>
-				<strong><?php esc_html_e( 'Product Carousel Slider for WooCommerce activated!', 'product-carousel-slider-biddut-block' ); ?></strong><br>
+				<strong><?php esc_html_e( 'Product Carousel Slider for WooCommerce (Biddut Block) activated!', 'product-carousel-slider-biddut-block' ); ?></strong><br>
 				<?php esc_html_e( 'This plugin requires WooCommerce to be installed and activated.', 'product-carousel-slider-biddut-block' ); ?>
 				<a href="<?php echo esc_url( admin_url( 'plugin-install.php?s=woocommerce&tab=search&type=term' ) ); ?>" class="button button-primary" style="margin-left: 10px;">
 					<?php esc_html_e( 'Install WooCommerce', 'product-carousel-slider-biddut-block' ); ?>

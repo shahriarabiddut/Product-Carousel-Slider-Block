@@ -1,6 +1,6 @@
 <?php
 /**
- * PCSBB Gutenberg Block Class v1.3.0
+ * PCSBB Gutenberg Block Class v1.4.0
  *
  * @package ProductCarouselSliderBiddutBlock
  */
@@ -24,12 +24,32 @@ class PCSBB_Gutenberg_Block {
 		// Enqueue editor assets
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
 
+		// Pre-register public handles so register_block_type can reference them via 'style'/'script'.
+		// WP then injects these automatically inside the editor iframe (required for apiVersion 3 /
+		// WP 6.9+ iframe canvas). The frontend also receives them via enqueue_public_assets()
+		// in class-pcsbb-core.php — WP deduplicates by handle, so no double-load.
+		wp_register_style(
+			'pcsbb-public',
+			PCSBB_PLUGIN_URL . 'assets/css/public.css',
+			array( 'dashicons' ),
+			PCSBB_VERSION
+		);
+		wp_register_script(
+			'pcsbb-public',
+			PCSBB_PLUGIN_URL . 'assets/js/public.js',
+			array( 'jquery' ),
+			PCSBB_VERSION,
+			true
+		);
+
 		// Register the block type
 		register_block_type(
 			'pcsbb/carousel',
 			array(
 				'render_callback' => array( $this, 'render_block' ),
 				'attributes'      => $this->get_block_attributes(),
+				'style'           => 'pcsbb-public', // CSS: loaded in editor iframe + frontend
+				'script'          => 'pcsbb-public', // JS:  loaded in editor iframe + frontend
 			)
 		);
 	}
@@ -64,7 +84,7 @@ class PCSBB_Gutenberg_Block {
 		wp_enqueue_script(
 			'pcsbb-block-editor',
 			PCSBB_PLUGIN_URL . 'assets/js/block.js',
-			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-data' ),
+			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-data', 'wp-server-side-render' ),
 			PCSBB_VERSION,
 			true
 		);
@@ -128,7 +148,7 @@ class PCSBB_Gutenberg_Block {
 			// Mobile vertical gap (used when disableMobileSlider is true)
 			'mobileVerticalGap'        => array( 'type' => 'number',  'default' => 20 ),
 
-			//  Outer padding per device 
+			// Outer padding per device 
 			'outerPadXDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerPadYDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerPadXTablet'          => array( 'type' => 'number',  'default' => 0 ),
@@ -138,7 +158,7 @@ class PCSBB_Gutenberg_Block {
 			'outerPadXPhone'           => array( 'type' => 'number',  'default' => 0 ),
 			'outerPadYPhone'           => array( 'type' => 'number',  'default' => 0 ),
 
-			//  Outer margin per device
+			// Outer margin per device
 			'outerMarXDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerMarYDesktop'         => array( 'type' => 'number',  'default' => 0 ),
 			'outerMarXTablet'          => array( 'type' => 'number',  'default' => 0 ),
@@ -165,7 +185,7 @@ class PCSBB_Gutenberg_Block {
 			'prevArrowIcon'            => array( 'type' => 'string',  'default' => 'dashicons-arrow-left-alt2' ),
 			'nextArrowIcon'            => array( 'type' => 'string',  'default' => 'dashicons-arrow-right-alt2' ),
 
-			// Arrow size controls per device 
+			// Arrow size controls per device
 			'navArrowSizeDesktop'      => array( 'type' => 'number',  'default' => 30 ),
 			'navArrowSizeTablet'       => array( 'type' => 'number',  'default' => 30 ),
 			'navArrowSizeMobile'       => array( 'type' => 'number',  'default' => 26 ),
@@ -269,25 +289,33 @@ class PCSBB_Gutenberg_Block {
 			return '<p class="pcsbb-no-products">' . esc_html__( 'No products found.', 'product-carousel-slider-biddut-block' ) . '</p>';
 		}
 
-		// Scoped CSS — deferred to wp_footer to avoid two pitfalls:
-		// 1. wp_add_inline_style() silently drops CSS called after wp_head() printed the handle.
-		// 2. Inline <style> tags in render_callback output get stripped by WordPress block
-		//    content sanitization (wp_kses variants used in do_blocks pipeline).
-		// wp_footer fires after all content, so the styles always reach the browser.
-		$scoped_css = $this->build_scoped_css( $block_id, $a );
+		// Scoped CSS delivery:
+		// - Frontend (do_blocks): wp_footer used because wp_kses strips inline <style> tags from
+		//   render_callback output, and wp_add_inline_style() silently fails after wp_head() runs.
+		// - Editor SSR preview (REST API): wp_footer never fires during a REST request, so the
+		//   style is inlined directly. REST_REQUEST is set (true) for the full REST request
+		//   duration; available since WP 4.4 — safe for our 5.8+ requirement.
+		$scoped_css       = $this->build_scoped_css( $block_id, $a );
+		$inline_style_tag = '';
 		if ( $scoped_css ) {
 			$safe_id  = esc_attr( $block_id );
-			// wp_strip_all_tags is the correct escaping function for content inside a <style> tag.
-			// The CSS is already built exclusively from intval() and esc_attr() values,
-			// but PHPCS requires an explicit escaping call at the output point.
 			$safe_css = wp_strip_all_tags( $scoped_css );
-			add_action( 'wp_footer', static function() use ( $safe_id, $safe_css ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $safe_id is esc_attr(); $safe_css is wp_strip_all_tags()
-				echo '<style id="' . $safe_id . '-css">' . $safe_css . '</style>' . "\n";
-			} );
+			if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized above
+				$inline_style_tag = '<style id="' . $safe_id . '-css">' . $safe_css . '</style>';
+			} else {
+				add_action( 'wp_footer', static function() use ( $safe_id, $safe_css ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized above
+					echo '<style id="' . $safe_id . '-css">' . $safe_css . '</style>' . "\n";
+				} );
+			}
 		}
 
 		ob_start();
+
+		// Inline scoped styles for SSR/REST context (editor preview).
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized above
+		echo $inline_style_tag;
 
 		// CSS custom properties for colors (scoped to block ID)
 		$css_vars = $this->get_css_vars( $a );
@@ -378,8 +406,9 @@ class PCSBB_Gutenberg_Block {
 
 		return ob_get_clean();
 	}
+
 	/**
-	 * * Output scoped <style> block for this block instance.
+	 * Output scoped <style> block for this block instance.
 	 * Build scoped CSS string for this block instance.
 	 * Returns a plain CSS string — output as a <style> tag inside the block HTML.
 	 *
