@@ -1,7 +1,10 @@
-# 🛍️ Product Carousel Slider for WooCommerce (Biddut Block)
+# 🛍️ SAB Product Carousel Slider for WooCommerce
+<p align="center">
+  <img src="https://ps.w.org/product-carousel-slider-biddut-block/assets/banner-1544x500.png" alt="Biddut Revision Cleaner Banner">
+</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.4.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.5.0-blue?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/WordPress-5.8%2B-0073AA?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress">
   <img src="https://img.shields.io/badge/WooCommerce-5.0%2B-96588A?style=for-the-badge&logo=woocommerce&logoColor=white" alt="WooCommerce">
   <img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP">
@@ -9,7 +12,7 @@
 </p>
 
 <p align="center">
-  Transform your WooCommerce store with a stunning, fully responsive <strong>Product Carousel Slider for WooCommerce (Biddut Block)</strong> — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
+  Transform your WooCommerce store with a stunning, fully responsive <strong>SAB Product Carousel Slider for WooCommerce </strong> — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
 </p>
 
 ---
@@ -49,7 +52,8 @@ Control the number of product columns independently for every device:
 ### 🖼️ Image Display Modes
 
 - **Natural** — Preserves each product image's original aspect ratio for an organic feel
-- **Uniform** — Forces all images to the same height for a clean, grid-like consistency
+- **Uniform** — Forces all images to the same size (responsive per device) for a clean, grid-like consistency; Image Fit lets you choose Cover (crop), Contain (fit, no crop), or Stretch (fill exactly)
+- **Cover** — Same uniform square size as Uniform, plus independent Horizontal (Left/Center/Right) and Vertical (Top/Center/Bottom) position controls for which part of the photo stays visible
 
 ---
 
@@ -70,6 +74,7 @@ Control the number of product columns independently for every device:
 - Both arrows & dots
 - Completely hide navigation
 - Custom arrow icon selection via free-text Dashicons class input
+- Arrow Position — set the previous/next arrow's gap from the carousel's left/right edge (px)
 
 ---
 
@@ -89,6 +94,7 @@ Control the number of product columns independently for every device:
 - **Full color customization** — Background, text, hover, and border colors
 - **Icon selector** — Add any Dashicons icon to your button
 - **Icon position** — Left or right of the text
+- **Button Position** — Independent margin/padding (all sides) for the button row, with an "Auto push to bottom" toggle so buttons stay aligned across cards of different heights
 
 ---
 
@@ -146,6 +152,17 @@ Show or hide any of the following elements independently:
 - **Add to Cart button** — Full color customization (background, text, hover, border) with icon selector and position
 - **View All button** — Full color and font-size customization
 - Extend further with custom CSS
+
+---
+
+### 🗂️ Carousels Admin & Shortcodes
+
+- Build and manage carousels from **wp-admin → Carousels** — no block required
+- **All Sliders** — every saved Slider with its shortcode, one click to copy
+- **New Slider / Edit Slider** — the exact same settings panel and live preview as the block, laid out as left-hand tabs with the matching content on the right
+- Every saved Slider gets its own shortcode (`[pcsbb_carousel id="12"]`) — usable anywhere shortcodes work: widgets, page builders, theme templates
+- The Gutenberg block can either be configured directly (original behavior) or pointed at a saved Slider from Carousels — pick a source per block instance
+- **Slider Default Setting** — set the starting values every newly created Slider is seeded with
 
 ---
 
@@ -208,6 +225,18 @@ This plugin **does not collect, store, or transmit any user data**. It only read
 ---
 
 ## 📋 Changelog
+
+### Version 1.5.0 — 2026-08-18
+
+- Added: "Carousels" admin area (All Sliders, New Slider, Slider Default Setting) — build and manage carousels from wp-admin, no block required.
+- Added: Every saved Slider gets its own shortcode (`[pcsbb_carousel id="12"]`), usable anywhere shortcodes work.
+- Added: The block can be configured directly or pointed at a saved Slider from Carousels — an explicit "Configure this block directly" / "Use a Slider from Carousels" choice.
+- Added: Arrow Position controls (Left Arrow Gap / Right Arrow Gap) under Navigation — set how far the previous/next arrows sit from the carousel's own edges.
+- Added: Button Position controls under Display Options → Show Add to Cart Button — independent margin/padding (all sides) for the button row, with an "Auto push to bottom (Uniform)" toggle (on by default, matching the original layout).
+- Added: "Cover (uniform + position)" Image Height Mode — independent Horizontal and Vertical position controls (9 combinations) for which part of the photo stays visible.
+- Added: "Image Fit" for Uniform mode — Cover (crop, default), Contain (fit, no crop), or Stretch (fill exactly).
+- Added: Explicit responsive Image Height (px, per device — 450/400/350/250) for Uniform and Cover modes, more reliable across themes than aspect-ratio alone. Automatically skipped on Mobile/Phone while Disable Mobile Slider is on.
+- Added: "Copy" button next to each shortcode in Carousels → All Sliders.
 
 ### Version 1.4.0 — 2026-03-13
 
@@ -324,5 +353,8 @@ If this plugin saves you time, consider buying me a coffee!
 - WordPress Dashicons used for navigation arrows
 
 ---
+<p align="center">
+  <img src="https://ps.w.org/product-carousel-slider-biddut-block/assets/icon-256x256.png" alt="Biddut Revision Cleaner Icon" width="80">
+</p>
 
 > **Note:** Regular updates and improvements are planned. Star the repository to stay tuned!

@@ -318,9 +318,18 @@ class PCSBB_Admin {
 				width: 64px;
 				height: 64px;
 				border-radius: 6px;
-				object-fit: cover;
 				flex-shrink: 0;
 				border: 1px solid #e0e0e0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: #f6f7f7;
+			}
+			.pcsbb-plugin-icon .dashicons {
+				width: 32px;
+				height: 32px;
+				font-size: 32px;
+				color: #646970;
 			}
 			.pcsbb-plugin-info {
 				flex: 1;
@@ -433,7 +442,7 @@ class PCSBB_Admin {
 			<div class="pcsbb-page-header">
 				<h1>
 					<span class="dashicons dashicons-images-alt2"></span>
-					<?php esc_html_e( 'Product Carousel Slider for WooCommerce (Biddut Block)', 'product-carousel-slider-biddut-block' ); ?>
+					<?php esc_html_e( 'SAB Product Carousel Slider for WooCommerce ', 'product-carousel-slider-biddut-block' ); ?>
 				</h1>
 			</div>
 
@@ -669,8 +678,8 @@ class PCSBB_Admin {
 
 		$plugins = array(
 			array(
-				'name'        => 'Product Carousel Slider for WooCommerce (Biddut Block)',
-				'icon'        => 'https://ps.w.org/product-carousel-slider-biddut-block/assets/icon-256x256.png?rev=3463981',
+				'name'        => 'SAB Product Carousel Slider for WooCommerce ',
+				'icon_class'  => 'dashicons-slides',
 				'url'         => 'https://wordpress.org/plugins/product-carousel-slider-biddut-block/',
 				'description' => 'Responsive product carousel block with configurable columns, hover effects, gallery navigation, and WooCommerce add-to-cart.',
 			),
@@ -708,12 +717,9 @@ class PCSBB_Admin {
 			<div class="pcsbb-plugins-grid">
 				<?php foreach ( $plugins as $plugin ) : ?>
 				<div class="pcsbb-plugin-card">
-					<img
-						src="<?php echo esc_url( $plugin['icon'] ); ?>"
-						alt="<?php echo esc_attr( $plugin['name'] ); ?>"
-						class="pcsbb-plugin-icon"
-						loading="lazy"
-					>
+					<div class="pcsbb-plugin-icon pcsbb-plugin-icon-local">
+						<span class="dashicons <?php echo esc_attr( $plugin['icon_class'] ); ?>" aria-hidden="true"></span>
+					</div>
 					<div class="pcsbb-plugin-info">
 						<h3 class="pcsbb-plugin-name">
 							<a href="<?php echo esc_url( $plugin['url'] ); ?>" target="_blank" rel="noopener">

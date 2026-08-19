@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider for WooCommerce (Biddut Block) v1.3.0
+ * SAB Product Carousel Slider for WooCommerce  v1.3.0
  */
 
 (function ($) {

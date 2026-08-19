@@ -1,10 +1,10 @@
-=== Product Carousel Slider for WooCommerce (Biddut Block) ===
+=== SAB Product Carousel Slider for WooCommerce  ===
 Contributors: shahriarabiddut
-Tags: woocommerce, carousel, slider, products, gallery
+Tags: woocommerce slider, carousel, slider, products slider, product carousel
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://buymeacoffee.com/shahriarabiddut
@@ -13,12 +13,12 @@ Beautiful Product Carousel Slider for WooCommerce Block (Biddut Block) with resp
 
 == Description ==
 
-Transform your WooCommerce store with a stunning, fully responsive **Product Carousel Slider For WooCommerce (Biddut Block)** — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
+Transform your WooCommerce store with a stunning, fully responsive **SAB Product Carousel Slider for WooCommerce ** — built as a native Gutenberg block. Choose from two beautiful design variants, control every detail from columns to colors, and deliver a seamless shopping experience across all devices.
 
 = Design Variants =
 
 * **Card Style** — Modern card-based layout with borders, shadows, and smooth hover effects. Perfect for standard e-commerce stores.
-* **Gallery (Default)** — Minimalist, image-first presentation with transparent backgrounds and centered text. Ideal for art, photography, and premium products.
+* **Art Gallery (Default)** — Minimalist, image-first presentation with transparent backgrounds and centered text. Ideal for art, photography, and premium products.
 
 = Key Features =
 
@@ -28,9 +28,11 @@ Transform your WooCommerce store with a stunning, fully responsive **Product Car
 * **Disable Slider on Mobile** — Display all products in a vertical stack on smaller screens instead of a carousel
 * **Sale / Sold Out Labels** — Automatically shows "Sale" when a sale price is set and "Sold Out" when stock runs out
 * **Navigation Options** — Choose arrows (shown elegantly on hover), dots, both, or none
+* **Arrow Position** — Set the previous/next arrow's gap from the carousel's left/right edge (px)
 * **Hover Effects** — Select from Zoom, Lift, Glow, or None for product card interactions
 * **Gallery Features** — Display product gallery images as clickable dots; show a second image on hover
 * **Add to Cart** — Fully integrated WooCommerce AJAX add-to-cart with customizable button text and style
+* **Button Position** — Independent margin/padding (all sides) for the Add to Cart / View Product button row, with an "Auto push to bottom" toggle
 * **Product Query** — Filter by multiple categories and control ordering with full flexibility
 * **Display Controls** — Individually show or hide title, price, ratings, labels, and buttons
 * **Responsive Typography** — All font sizes adjust automatically for every screen size
@@ -47,7 +49,7 @@ Transform your WooCommerce store with a stunning, fully responsive **Product Car
 = Image Display Modes =
 
 * **Natural** — Preserves each product image's original aspect ratio for an organic feel
-* **Uniform** — Forces all images to the same height for a clean, grid-like consistency
+* **Uniform** — Forces all images to the same size (responsive per device) for a clean, grid-like consistency; Image Fit lets you choose Cover (crop), Contain (fit, no crop), or Stretch (fill exactly). When Image Fit is set to Cover, independent Horizontal (Left/Center/Right) and Vertical (Top/Center/Bottom) position controls appear for which part of the photo stays visible
 
 = Display Controls =
 
@@ -96,6 +98,10 @@ Yes. WooCommerce must be installed and activated for the plugin to function.
 
 Yes. You can add as many Product Carousel Slider blocks as you need on a single page, each with its own independent settings.
 
+= Can I build a carousel without using the block editor? =
+
+Yes. Go to **Carousels → New Slider** in your WordPress admin, configure it in the same settings panel used by the block, save it, then paste the generated shortcode (e.g. `[pcsbb_carousel id="12"]`) anywhere shortcodes are supported. You can also select any saved Slider directly from the block's "Saved Slider" panel.
+
 = Is the plugin mobile-friendly? =
 
 Absolutely. The plugin is fully responsive with independent column control for every device size, and supports touch/swipe gestures on mobile.
@@ -126,19 +132,34 @@ Full documentation is available on the WordPress Plugin Details page and in the 
 
 == Screenshots ==
 
-1. Gallery variant with minimalist style image-first, centered layout no title
-2. Gallery variant with minimalist style without Add To Cart Button and Title
-3. Card Style variant with modern card design and hover effects , without Add To Cart 
-4. Gutenberg block settings panel overview
-5. Header (Title & Subtitle) with Typography, Color and show/hide controls and Design Variant controls
-6. Responsive column settings and Image Settings
-7. Carousel Behavior — autoplay, loop, speed, and Disable Mobile Slider And Navigation Controls
-8. Product Query settings — multiple categories, ordering, and Hover Effects
-9. Display options panel — show/hide elements and Add to Cart settings
-10. Mobile responsive view — carousel on smaller screens
-11. Mobile responsive view — vertical stack layout with slider disabled
+1. Gallery variant with Art Gallery style image-first, centered layout title
+2. Gallery variant with Art Gallery style image-first, centered layout no title and All Add to cart button at bottom
+3. Gallery variant with Card style - Image Uniform Contain without Add To Cart Button and Title
+4. Gallery variant with Card style - Image Natural (preserve aspect ratio) with Add To Cart Button and Title
+5. Gutenberg block settings panel overview
+6. Header (Title & Subtitle) with Typography, Color and show/hide controls and Design Variant controls
+7. Responsive column settings and Image Settings
+8. Carousel Behavior — autoplay, loop, speed, and Disable Mobile Slider And Navigation Controls
+9. Product Query settings — multiple categories, ordering, and Hover Effects
+10. Display options panel — show/hide elements and Add to Cart settings
+11. Mobile responsive view — carousel on smaller screens
+12. Mobile responsive view — vertical stack layout with slider disabled
+13. New Backend Panel with Live Preview 
 
 == Changelog ==
+= 1.5.0 - 2026-08-18 =
+* Added: New "Carousels" admin menu (All Sliders, New Slider, Slider Default Setting) — build and manage carousels directly from wp-admin, no block required.
+* Added: Every saved Slider gets its own shortcode ([pcsbb_carousel id="123"]) so it can be placed anywhere shortcodes are supported (widgets, page builders, theme templates).
+* Added: The Gutenberg block can now point at a saved Slider from the "Carousels" library instead of configuring it directly — an explicit "Configure this block directly" / "Use a Slider from Carousels" choice, showing only the relevant controls for each. Existing blocks (no saved Slider) load into "Configure this block directly" exactly as before.
+* Added: "Slider Default Setting" screen — set the starting values every newly created Slider is seeded with.
+* Added: The backend Slider editor uses the exact same settings panel and live preview as the block editor — a left-hand tab list with the matching section on the right, and a full-width Live Preview below (skipped on Slider Default Setting, which has no single Slider to preview).
+* Added: "Copy" button next to each shortcode in Carousels → All Sliders.
+* Added: Arrow Position controls (Left Arrow Gap / Right Arrow Gap, in px) under Navigation — sets how far the previous/next arrows sit from the carousel's own left/right edge.
+* Added: Button Position controls under Display Options → Show Add to Cart Button — independent margin and padding (all sides) for the action-buttons row, plus an "Auto push to bottom (Uniform)" toggle (on by default, matching the original fixed layout; hides the Margin fields while on).
+* Added: "Image Fit" for Uniform Image Height Mode — Cover (crop to fill, default), Contain (fit, no crop — may show empty space on two sides), or Stretch (fill exactly, distorts proportions).
+* Added: When Image Fit is set to Cover, independent Horizontal (Left/Center/Right) and Vertical (Top/Center/Bottom) position controls (9 combinations) appear right underneath it, for which part of the photo stays visible after cropping.
+* Added: Explicit responsive Image Height (px, per device — Desktop 450 / Tablet 400 / Mobile 350 / Phone 250) for Uniform mode, more reliable across themes than aspect-ratio alone. Mobile/Phone height is automatically skipped while Disable Mobile Slider is on, so the vertical-stack layout keeps images at their natural height there.
+
 = 1.4.0 - 2026-03-13 =
 * Added: Live editor preview — block now renders a real server-side preview inside Gutenberg; every control change reflects instantly in the editor canvas exactly as it appears on the frontend.
 
@@ -217,5 +238,4 @@ Contributions are welcome! Visit the GitHub repository to submit a pull request 
 = Credits =
 
 * Built with WordPress & WooCommerce
-* Follows WordPress coding standards and best practices
 * WordPress Dashicons used for navigation arrows

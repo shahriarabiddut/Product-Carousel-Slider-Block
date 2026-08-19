@@ -1,0 +1,266 @@
+/**
+ * SAB Product Carousel Slider for WooCommerce  v1.5.0
+ * Carousels admin screens: All Sliders table + Slider editor.
+ */
+
+.pcsbb-carousels-wrap {
+  margin: 20px 20px 40px 0;
+}
+
+.pcsbb-carousels-wrap h1 {
+  margin-bottom: 20px;
+}
+
+.pcsbb-carousels-wrap .components-notice,
+.pcsbb-carousels-wrap .notice {
+  margin: 0 0 20px;
+}
+
+/* ── All Sliders table ─────────────────────────────────────────── */
+.pcsbb-sliders-table-wrap {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.pcsbb-sliders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pcsbb-sliders-table th,
+.pcsbb-sliders-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f1;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.pcsbb-sliders-table th {
+  background: #f6f7f7;
+  font-weight: 600;
+}
+
+.pcsbb-sliders-table tr:last-child td {
+  border-bottom: none;
+}
+
+.pcsbb-shortcode-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f0f1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+
+.pcsbb-copy-shortcode {
+  margin-left: 8px;
+}
+
+.pcsbb-sliders-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #666;
+}
+
+/* ── Slider editor: two-column responsive layout ──────────────── */
+.pcsbb-admin-editor-toolbar {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.pcsbb-admin-editor-title {
+  min-width: 280px;
+  flex: 1 1 280px;
+}
+
+.pcsbb-admin-editor-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pcsbb-shortcode-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f6f7f7;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  padding: 4px 4px 4px 10px;
+}
+
+.pcsbb-shortcode-box code {
+  font-size: 12px;
+}
+
+.pcsbb-admin-editor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.pcsbb-admin-editor-settings {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  min-height: 480px;
+}
+
+.pcsbb-tab-nav {
+  border-right: 1px solid #e0e0e0;
+  background: #f6f7f7;
+  padding: 8px 0;
+}
+
+.pcsbb-tab-nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 18px;
+  border: 0;
+  border-left: 3px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #1e1e1e;
+}
+
+.pcsbb-tab-nav-item:hover {
+  background: #fff;
+}
+
+.pcsbb-tab-nav-item.is-active {
+  background: #fff;
+  border-left-color: #2271b1;
+  font-weight: 600;
+  color: #2271b1;
+}
+
+.pcsbb-admin-editor-fields {
+  padding: 8px 24px 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.pcsbb-admin-editor-preview {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  padding: 20px 24px 32px;
+  min-height: 300px;
+}
+
+.pcsbb-admin-editor-preview-heading {
+  margin: 4px 0 20px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #757575;
+}
+
+.pcsbb-admin-preview-card {
+  position: relative;
+}
+
+.pcsbb-admin-editor-defaults-help {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+/* Give each settings panel real breathing room — the default wp-components
+   spacing reads fine inside the tight block-editor sidebar, but is too
+   cramped for this wider, standalone admin layout. Only one panel is ever
+   visible at a time (driven by the tab nav), so no need for a border
+   between panels here. */
+.pcsbb-admin-editor-fields .components-panel__body {
+  border: none;
+  padding: 0;
+}
+.pcsbb-admin-editor-fields .components-panel__body:not(.is-opened) {
+  display: none;
+}
+.pcsbb-admin-editor-fields .components-panel__body.is-opened {
+  padding: 12px 4px;
+}
+.pcsbb-admin-editor-fields .components-panel__body-title {
+  display: none;
+}
+.pcsbb-admin-editor-fields .components-base-control {
+  margin-bottom: 18px;
+}
+.pcsbb-admin-editor-fields .components-base-control:last-child {
+  margin-bottom: 4px;
+}
+.pcsbb-admin-editor-fields hr {
+  margin: 18px 0;
+}
+
+/* ── Responsive: tab list moves above the fields on narrower screens ── */
+@media (max-width: 782px) {
+  .pcsbb-admin-editor-settings {
+    grid-template-columns: 1fr;
+  }
+  .pcsbb-tab-nav {
+    display: flex;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .pcsbb-tab-nav-item {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    width: auto;
+    flex: 1 1 auto;
+  }
+  .pcsbb-tab-nav-item.is-active {
+    border-left-color: transparent;
+    border-bottom-color: #2271b1;
+  }
+}
+
+@media (max-width: 600px) {
+  .pcsbb-admin-editor-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pcsbb-admin-editor-title {
+    min-width: 0;
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  .pcsbb-admin-editor-toolbar-actions {
+    justify-content: space-between;
+  }
+  .pcsbb-sliders-table thead {
+    display: none;
+  }
+  .pcsbb-sliders-table,
+  .pcsbb-sliders-table tbody,
+  .pcsbb-sliders-table tr,
+  .pcsbb-sliders-table td {
+    display: block;
+    width: 100%;
+  }
+  .pcsbb-sliders-table tr {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f1;
+  }
+  .pcsbb-sliders-table td {
+    border-bottom: none;
+    padding: 4px 0;
+  }
+}

@@ -36,13 +36,22 @@ class PCSBB_Core {
 		// Register the Gutenberg block (also registers editor scripts via PCSBB_Gutenberg_Block)
 		$this->loader->add_action( 'init', $this, 'register_block' );
 
+		// Register the "Carousels" storage layer (CPT) and [pcsbb_carousel] shortcode.
+		$this->loader->add_action( 'init', $this, 'register_slider_cpt' );
+		$this->loader->add_action( 'init', $this, 'register_shortcode' );
+
+		// REST API for the backend Slider editor + the block's Saved Slider dropdown.
+		$this->loader->add_action( 'rest_api_init', $this, 'register_rest_routes' );
+
 		// Only load frontend assets if WooCommerce is active
 		if ( $this->is_woocommerce_active() ) {
 			$this->loader->add_action( 'wp_enqueue_scripts', $this, 'enqueue_public_assets' );
 		}
 
-		// Register admin page
+		// Register admin pages
 		$this->loader->add_action( 'admin_menu', $this, 'register_admin_page' );
+		$this->loader->add_action( 'admin_menu', $this, 'register_slider_admin_page' );
+		$this->loader->add_action( 'admin_post_pcsbb_delete_slider', $this, 'handle_delete_slider' );
 	}
 
 	/**
@@ -73,7 +82,7 @@ class PCSBB_Core {
 		?>
 		<div class="notice notice-warning is-dismissible">
 			<p>
-				<strong><?php esc_html_e( 'Product Carousel Slider for WooCommerce (Biddut Block):', 'product-carousel-slider-biddut-block' ); ?></strong>
+				<strong><?php esc_html_e( 'SAB Product Carousel Slider for WooCommerce :', 'product-carousel-slider-biddut-block' ); ?></strong>
 				<?php esc_html_e( 'This plugin requires WooCommerce to be installed and activated.', 'product-carousel-slider-biddut-block' ); ?>
 				<a href="<?php echo esc_url( admin_url( 'plugin-install.php?s=woocommerce&tab=search&type=term' ) ); ?>">
 					<?php esc_html_e( 'Install WooCommerce', 'product-carousel-slider-biddut-block' ); ?>
@@ -133,5 +142,45 @@ class PCSBB_Core {
 	public function register_admin_page() {
 		$admin = new PCSBB_Admin();
 		$admin->register_admin_menu();
+	}
+
+	/**
+	 * Register the Carousel Slider CPT (storage for saved Sliders).
+	 */
+	public function register_slider_cpt() {
+		$cpt = new PCSBB_Slider_CPT();
+		$cpt->register();
+	}
+
+	/**
+	 * Register the [pcsbb_carousel] shortcode.
+	 */
+	public function register_shortcode() {
+		$shortcode = new PCSBB_Shortcode();
+		$shortcode->register();
+	}
+
+	/**
+	 * Register the pcsbb/v1 REST routes.
+	 */
+	public function register_rest_routes() {
+		$rest = new PCSBB_REST();
+		$rest->register_routes();
+	}
+
+	/**
+	 * Register the "Carousels" admin menu (All Sliders / New Slider / Slider Default Setting).
+	 */
+	public function register_slider_admin_page() {
+		$admin = new PCSBB_Slider_Admin();
+		$admin->register_admin_menu();
+	}
+
+	/**
+	 * admin-post.php handler for deleting a Slider from the All Sliders list.
+	 */
+	public function handle_delete_slider() {
+		$admin = new PCSBB_Slider_Admin();
+		$admin->handle_delete();
 	}
 }

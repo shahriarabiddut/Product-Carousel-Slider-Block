@@ -1,5 +1,5 @@
 /**
- * Product Carousel Slider for WooCommerce (Biddut Block) v1.3.0
+ * SAB Product Carousel Slider for WooCommerce  v1.3.0
  */
 
 :root {
@@ -227,54 +227,60 @@
 /* Image Height Modes */
 .pcsbb-carousel-wrapper[data-image-height-mode="natural"]
   .pcsbb-product-image-wrapper {
-  height: auto;
+  height: auto !important;
 }
 
 .pcsbb-carousel-wrapper[data-image-height-mode="natural"] .pcsbb-product-image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
   display: block;
 }
 
 .pcsbb-carousel-wrapper[data-image-height-mode="uniform"]
   .pcsbb-product-image-wrapper {
-  aspect-ratio: 1;
-  height: auto;
+  aspect-ratio: 1 !important;
+  height: auto !important;
 }
 
 .pcsbb-carousel-wrapper[data-image-height-mode="uniform"] .pcsbb-product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center;
   display: block;
 }
 
 /* Image height modes for mobile vertical */
 .pcsbb-mobile-vertical-mode[data-image-height-mode="natural"]
   .pcsbb-product-image-wrapper {
-  height: auto;
+  height: auto !important;
 }
 
 .pcsbb-mobile-vertical-mode[data-image-height-mode="natural"]
   .pcsbb-product-image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
   display: block;
 }
 
 .pcsbb-mobile-vertical-mode[data-image-height-mode="uniform"]
   .pcsbb-product-image-wrapper {
-  aspect-ratio: 3 / 4;
-  height: auto;
+  aspect-ratio: 3 / 4 !important;
+  height: auto !important;
 }
 
 .pcsbb-mobile-vertical-mode[data-image-height-mode="uniform"]
   .pcsbb-product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center;
   display: block;
 }
 

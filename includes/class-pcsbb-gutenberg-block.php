@@ -47,7 +47,7 @@ class PCSBB_Gutenberg_Block {
 			'pcsbb/carousel',
 			array(
 				'render_callback' => array( $this, 'render_block' ),
-				'attributes'      => $this->get_block_attributes(),
+				'attributes'      => self::get_block_attributes(),
 				'style'           => 'pcsbb-public', // CSS: loaded in editor iframe + frontend
 				'script'          => 'pcsbb-public', // JS:  loaded in editor iframe + frontend
 			)
@@ -81,12 +81,32 @@ class PCSBB_Gutenberg_Block {
 		// Ensure dashicons available in editor
 		wp_enqueue_style( 'dashicons' );
 
+		// Shared settings-panel + live-preview components, reused verbatim by
+		// the wp-admin "Carousels" Slider editor (see PCSBB_Slider_Admin).
+		wp_enqueue_script(
+			'pcsbb-editor-shared',
+			PCSBB_PLUGIN_URL . 'assets/js/pcsbb-editor-shared.js',
+			array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-data', 'wp-core-data', 'wp-server-side-render' ),
+			PCSBB_VERSION,
+			true
+		);
+
 		wp_enqueue_script(
 			'pcsbb-block-editor',
 			PCSBB_PLUGIN_URL . 'assets/js/block.js',
-			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-data', 'wp-server-side-render' ),
+			array( 'pcsbb-editor-shared', 'wp-blocks', 'wp-element', 'wp-editor', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-data', 'wp-api-fetch', 'wp-server-side-render' ),
 			PCSBB_VERSION,
 			true
+		);
+
+		wp_localize_script(
+			'pcsbb-block-editor',
+			'pcsbbBlockEditor',
+			array(
+				'slidersAdminUrl' => class_exists( 'PCSBB_Slider_Admin' )
+					? admin_url( 'admin.php?page=' . PCSBB_Slider_Admin::EDIT_SLUG )
+					: '',
+			)
 		);
 
 		wp_enqueue_style(
@@ -102,7 +122,7 @@ class PCSBB_Gutenberg_Block {
 	 *
 	 * @return array
 	 */
-	private function get_block_attributes() {
+	public static function get_block_attributes() {
 		return array(
 			// Header
 			'showHeader'               => array( 'type' => 'boolean', 'default' => false ),
@@ -170,6 +190,15 @@ class PCSBB_Gutenberg_Block {
 
 			// Image Display
 			'imageHeightMode'          => array( 'type' => 'string',  'default' => 'natural' ),
+			'imageObjectPosition'      => array( 'type' => 'string',  'default' => 'center' ),
+			'imageObjectPositionY'     => array( 'type' => 'string',  'default' => 'center' ),
+			'imageFit'                 => array( 'type' => 'string',  'default' => 'cover' ),
+			// Explicit responsive height for Uniform/Cover modes (more reliable
+			// across themes than aspect-ratio alone).
+			'uniformHeightDesktop'     => array( 'type' => 'number',  'default' => 450 ),
+			'uniformHeightTablet'      => array( 'type' => 'number',  'default' => 400 ),
+			'uniformHeightMobile'      => array( 'type' => 'number',  'default' => 350 ),
+			'uniformHeightPhone'       => array( 'type' => 'number',  'default' => 250 ),
 
 			// Carousel Behavior
 			'autoplay'                 => array( 'type' => 'boolean', 'default' => false ),
@@ -194,6 +223,20 @@ class PCSBB_Gutenberg_Block {
 			'navIconSizeTablet'        => array( 'type' => 'number',  'default' => 13 ),
 			'navIconSizeMobile'        => array( 'type' => 'number',  'default' => 11 ),
 			'navIconSizePhone'         => array( 'type' => 'number',  'default' => 10 ),
+			// Arrow horizontal position (gap from the carousel's own edge)
+			'navGapLeft'               => array( 'type' => 'number',  'default' => 10 ),
+			'navGapRight'              => array( 'type' => 'number',  'default' => 10 ),
+
+			// Add to Cart / View Product button wrapper position (.pcsbb-action-buttons)
+			'actionButtonsAutoTop'        => array( 'type' => 'boolean', 'default' => true ),
+			'actionButtonsMarginTop'      => array( 'type' => 'number',  'default' => 0 ),
+			'actionButtonsMarginRight'    => array( 'type' => 'number',  'default' => 0 ),
+			'actionButtonsMarginBottom'   => array( 'type' => 'number',  'default' => 0 ),
+			'actionButtonsMarginLeft'     => array( 'type' => 'number',  'default' => 0 ),
+			'actionButtonsPaddingTop'     => array( 'type' => 'number',  'default' => 10 ),
+			'actionButtonsPaddingRight'   => array( 'type' => 'number',  'default' => 0 ),
+			'actionButtonsPaddingBottom'  => array( 'type' => 'number',  'default' => 0 ),
+			'actionButtonsPaddingLeft'    => array( 'type' => 'number',  'default' => 0 ),
 
 			// Hover / Gallery
 			'hoverEffect'              => array( 'type' => 'string',  'default' => 'zoom' ),
@@ -263,6 +306,9 @@ class PCSBB_Gutenberg_Block {
 			'viewAllHoverBgColor'      => array( 'type' => 'string',  'default' => '#000000' ),
 			'viewAllHoverTextColor'    => array( 'type' => 'string',  'default' => '#ffffff' ),
 			'viewAllBorderColor'       => array( 'type' => 'string',  'default' => '#333333' ),
+
+			// Saved Slider reference (0 = use the attributes above directly)
+			'sliderId'                 => array( 'type' => 'number',  'default' => 0 ),
 		);
 	}
 
@@ -277,7 +323,18 @@ class PCSBB_Gutenberg_Block {
 			return '<p class="pcsbb-no-products">' . esc_html__( 'WooCommerce is required.', 'product-carousel-slider-biddut-block' ) . '</p>';
 		}
 
-		$a = wp_parse_args( $attributes, $this->get_default_attributes() );
+		// If this block instance points at a saved Slider (Carousels admin),
+		// that Slider's own saved attributes take over entirely — the block's
+		// local attributes are ignored except for the sliderId pointer itself.
+		if ( ! empty( $attributes['sliderId'] ) && class_exists( 'PCSBB_Slider_CPT' ) ) {
+			$saved = PCSBB_Slider_CPT::get_attributes( absint( $attributes['sliderId'] ) );
+			if ( null !== $saved ) {
+				$attributes = $saved;
+			}
+		}
+
+		$a = wp_parse_args( $attributes, self::get_default_attributes() );
+		$a = self::normalize_attributes( $a );
 
 		// Generate unique block ID for scoped CSS
 		$block_id = 'pcsbb-block-' . wp_unique_id();
@@ -445,6 +502,8 @@ class PCSBB_Gutenberg_Block {
 		$ico_t = intval( $a['navIconSizeTablet'] );
 		$ico_m = intval( $a['navIconSizeMobile'] );
 		$ico_p = intval( $a['navIconSizePhone'] );
+		$gap_l = intval( $a['navGapLeft'] );
+		$gap_r = intval( $a['navGapRight'] );
 
 
 
@@ -485,6 +544,12 @@ class PCSBB_Gutenberg_Block {
 		"}";
 		$css .= "{$id} .pcsbb-nav-arrow{width:{$arr_d}px;height:{$arr_d}px;min-width:{$arr_d}px;min-height:{$arr_d}px;max-width:{$arr_d}px;max-height:{$arr_d}px;}";
 		$css .= "{$id} .pcsbb-nav-arrow .dashicons{font-size:{$ico_d}px;width:{$ico_d}px!important;height:{$ico_d}px!important;line-height:{$ico_d}px!important;}";
+
+		// ── Arrow horizontal position — left arrow's gap from the left edge,
+		// right arrow's gap from the right edge. Same at every breakpoint;
+		// overrides public.css's fixed 10px/10px (and 5px/5px on phone).
+		$css .= "{$id} .pcsbb-nav-arrow-prev{left:{$gap_l}px;}";
+		$css .= "{$id} .pcsbb-nav-arrow-next{right:{$gap_r}px;}";
 
 		// Tablet
 		$mar_x_t_css = $mar_x_t > 0
@@ -549,6 +614,64 @@ class PCSBB_Gutenberg_Block {
 					"margin-right:auto!important;" .
 				"}" .
 			"}";
+		}
+
+		// ── Add to Cart / View Product button wrapper position ──────────────
+		// Default reproduces the plugin's original fixed CSS exactly:
+		// margin-top:auto (pins buttons to the card bottom), padding-top:10px,
+		// everything else 0 — only diverges once the user changes a value.
+		$ab_mt = ! empty( $a['actionButtonsAutoTop'] ) ? 'auto' : intval( $a['actionButtonsMarginTop'] ) . 'px';
+		$ab_mr = intval( $a['actionButtonsMarginRight'] );
+		$ab_mb = intval( $a['actionButtonsMarginBottom'] );
+		$ab_ml = intval( $a['actionButtonsMarginLeft'] );
+		$ab_pt = intval( $a['actionButtonsPaddingTop'] );
+		$ab_pr = intval( $a['actionButtonsPaddingRight'] );
+		$ab_pb = intval( $a['actionButtonsPaddingBottom'] );
+		$ab_pl = intval( $a['actionButtonsPaddingLeft'] );
+		$css  .= "{$id} .pcsbb-action-buttons{" .
+			"margin:{$ab_mt} {$ab_mr}px {$ab_mb}px {$ab_ml}px;" .
+			"padding:{$ab_pt}px {$ab_pr}px {$ab_pb}px {$ab_pl}px;" .
+		"}";
+
+		// ── Uniform mode: Image Fit (Cover default / Contain / Stretch) ──────
+		// Cover matches the base CSS already, so no override needed for it.
+		$image_fit = in_array( $a['imageFit'], array( 'cover', 'contain', 'fill' ), true ) ? $a['imageFit'] : 'cover';
+		if ( 'cover' !== $image_fit ) {
+			$css .= "{$id} .pcsbb-carousel-wrapper[data-image-height-mode=\"uniform\"] .pcsbb-product-image{object-fit:{$image_fit}!important;}";
+			$css .= "{$id} .pcsbb-mobile-vertical-mode[data-image-height-mode=\"uniform\"] .pcsbb-product-image{object-fit:{$image_fit}!important;}";
+		}
+
+		// ── Uniform mode: explicit responsive height ──────────────────────────
+		// A concrete pixel height (rather than relying on aspect-ratio alone)
+		// is used for reliable, consistent sizing across themes. Desktop/
+		// Tablet always apply; Mobile/Phone are skipped when Disable Mobile
+		// Slider is on, since .pcsbb-mobile-vertical-mode already governs
+		// height there (natural, not forced uniform) in that layout.
+		$uh_d = intval( $a['uniformHeightDesktop'] );
+		$uh_t = intval( $a['uniformHeightTablet'] );
+		$uh_m = intval( $a['uniformHeightMobile'] );
+		$uh_p = intval( $a['uniformHeightPhone'] );
+
+		$uniform_sel              = "{$id} .pcsbb-carousel-wrapper[data-image-height-mode=\"uniform\"] .pcsbb-product-image-wrapper";
+		$uniform_sel_no_vertical  = "{$id} .pcsbb-carousel-wrapper:not(.pcsbb-mobile-vertical-mode)[data-image-height-mode=\"uniform\"] .pcsbb-product-image-wrapper";
+
+		$css .= "{$uniform_sel}{height:{$uh_d}px!important;min-height:{$uh_d}px!important;max-height:{$uh_d}px!important;width:100%!important;flex-basis:{$uh_d}px!important;}";
+		$css .= "@media(max-width:1279px){{$uniform_sel}{height:{$uh_t}px!important;min-height:{$uh_t}px!important;max-height:{$uh_t}px!important;flex-basis:{$uh_t}px!important;}}";
+		$css .= "@media(max-width:767px){{$uniform_sel_no_vertical}{height:{$uh_m}px!important;min-height:{$uh_m}px!important;max-height:{$uh_m}px!important;flex-basis:{$uh_m}px!important;}}";
+		$css .= "@media(max-width:479px){{$uniform_sel_no_vertical}{height:{$uh_p}px!important;min-height:{$uh_p}px!important;max-height:{$uh_p}px!important;flex-basis:{$uh_p}px!important;}}";
+
+		// ── Uniform + Cover fit: Horizontal/Vertical Position ─────────────────
+		// Position only has meaning once the image is actually being cropped
+		// (Image Fit = Cover); Contain/Stretch have nothing left to position.
+		if ( 'cover' === $image_fit ) {
+			$obj_pos_x = in_array( $a['imageObjectPosition'], array( 'left', 'right', 'center' ), true )
+				? $a['imageObjectPosition']
+				: 'center';
+			$obj_pos_y = in_array( $a['imageObjectPositionY'], array( 'top', 'bottom', 'center' ), true )
+				? $a['imageObjectPositionY']
+				: 'center';
+			$css .= "{$id} .pcsbb-carousel-wrapper[data-image-height-mode=\"uniform\"] .pcsbb-product-image{object-position:{$obj_pos_x} {$obj_pos_y}!important;}";
+			$css .= "{$id} .pcsbb-mobile-vertical-mode[data-image-height-mode=\"uniform\"] .pcsbb-product-image{object-position:{$obj_pos_x} {$obj_pos_y}!important;}";
 		}
 
 		return $css;
@@ -866,11 +989,33 @@ class PCSBB_Gutenberg_Block {
 	/**
 	 * Get default attribute values as a flat array
 	 */
-	private function get_default_attributes() {
+	public static function get_default_attributes() {
 		$defaults = array();
-		foreach ( $this->get_block_attributes() as $key => $def ) {
+		foreach ( self::get_block_attributes() as $key => $def ) {
 			$defaults[ $key ] = $def['default'] ?? null;
 		}
 		return $defaults;
+	}
+
+	/**
+	 * Normalize a full attribute set before it's used for rendering/CSS.
+	 *
+	 * The standalone "Cover (uniform + position)" Image Height Mode has been
+	 * merged into "Uniform" — Horizontal/Vertical Position now live under
+	 * Image Fit → Cover instead of their own mode. Older blocks/Sliders saved
+	 * before this change may still store `imageHeightMode = "cover"`; map
+	 * that legacy value to `uniform` + `imageFit = "cover"` so existing
+	 * content keeps rendering exactly as it did before, with no migration
+	 * step or version bump required.
+	 *
+	 * @param array $a Full, already-defaulted attribute array.
+	 * @return array
+	 */
+	public static function normalize_attributes( $a ) {
+		if ( isset( $a['imageHeightMode'] ) && 'cover' === $a['imageHeightMode'] ) {
+			$a['imageHeightMode'] = 'uniform';
+			$a['imageFit']        = 'cover';
+		}
+		return $a;
 	}
 }
